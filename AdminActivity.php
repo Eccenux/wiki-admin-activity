@@ -40,6 +40,7 @@ class AdminActivity {
 				'block_unblock_users' => 0,
 				'protect_unprotect' => 0,
 				'mediawiki_edits' => 0,
+				'main_edits' => 0,
 				'total' => 0
 			];
 		}
@@ -47,13 +48,26 @@ class AdminActivity {
 	}
 
 	public function getMediaWikiEdits($admins, $days=365) {
+		return $this->getNamespaceEdits($admins, 8, $days);
+	}
+	public function getMainEdits($admins, $days=365) {
+		return $this->getNamespaceEdits($admins, 0, $days);
+	}
+
+	public function getNamespaceEdits($admins, $ns, $days=365) {
+		if (!is_int($ns) || $ns < 0) {
+			return [];
+		}
+		if (!is_int($days) || $days < 0) {
+			return [];
+		}
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 	
 		$query = "SELECT rev_actor as revactor_actor, count(*) as cnt
 				FROM revision
 				LEFT JOIN page ON rev_page = page_id
-				WHERE page_namespace = 8
+				WHERE page_namespace = $ns
 					AND rev_actor IN ($placeholders)
 					AND rev_timestamp >= ?
 				GROUP BY rev_actor
@@ -77,6 +91,10 @@ class AdminActivity {
 	}
 
 	public function getAdminActions($admins, $days=365) {
+		if (!is_int($days) || $days < 0) {
+			return [];
+		}
+
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 
@@ -118,11 +136,15 @@ class AdminActivity {
 	public function getAdminStats() {
 		$admins = $this->getAdmins();
 		$mwEdits = $this->getMediaWikiEdits($admins);
+		$mainEdits = $this->getMainEdits($admins);
 		$adminActions = $this->getAdminActions($admins);
 
 		foreach ($admins as $actor_id => &$admin) {
 			if (isset($mwEdits[$actor_id])) {
 				$admin['mediawiki_edits'] = $mwEdits[$actor_id];
+			}
+			if (isset($mainEdits[$actor_id])) {
+				$admin['main_edits'] = $mainEdits[$actor_id];
 			}
 			if (isset($adminActions[$actor_id])) {
 				$admin['delete_restore'] = $adminActions[$actor_id]['delete_restore'];
@@ -142,10 +164,11 @@ class AdminActivity {
 					<th>UID</th>
 					<th>Admin</th>
 					<th>Usuwanie / Przywracanie</th>
-					<th>(Od)blokowanie Osób</th>
-					<th>(Od)blokowanie Stron</th>
-					<th>Edycje MW</th>
-					<th>Suma</th>
+					<th>(Od)blokowanie osób</th>
+					<th>(Od)blokowanie stron</th>
+					<th title='Edycje w przestrzeni nazw MediaWiki'>Edycje MW</th>
+					<th>Suma akcji</th>
+					<th title='Edycje w głównej przestrzeni nazw (ns:0)'>Edycje artykułów</th>
 				</tr>";
 		foreach ($data as $admin) {
 			echo "<tr>
@@ -156,6 +179,7 @@ class AdminActivity {
 					<td>{$admin['protect_unprotect']}</td>
 					<td>{$admin['mediawiki_edits']}</td>
 					<td>{$admin['total']}</td>
+					<td>{$admin['main_edits']}</td>
 				</tr>";
 		}
 		echo "</table>";
