@@ -1,4 +1,6 @@
 <?php
+require_once './SimpleCache.php';
+
 class AdminActivity {
 	private $conn;
 
@@ -14,6 +16,15 @@ class AdminActivity {
 		if ($this->conn->connect_error) {
 			die("Connection failed: " . $this->conn->connect_error);
 		}
+
+		$day_minutes = 1440; // Cache for 1 day
+		$baseDir = "./.cache/";
+		if (!is_dir($baseDir)) {
+			mkdir($baseDir, 0777, true);
+		}
+		$this->cache = [
+			'main_edits' => new SimpleCache($baseDir . 'main_edits_cache.json', $day_minutes),
+		];
 	}
 
 	private function sqlError() {
@@ -51,7 +62,17 @@ class AdminActivity {
 		return $this->getNamespaceEdits($admins, 8, $days);
 	}
 	public function getMainEdits($admins, $days=365) {
-		return $this->getNamespaceEdits($admins, 0, $days);
+		// try cache
+		$cache = $this->cache['main_edits'];
+		$cachedData = $cache->get();
+		if ($cachedData !== null) {
+			return $cachedData;
+		}
+
+		// fresh data (+save in cache)
+		$data = $this->getNamespaceEdits($admins, 0, $days);
+		$cache->set($data);
+		return $data;
 	}
 
 	public function getNamespaceEdits($admins, $ns, $days=365) {
@@ -157,8 +178,7 @@ class AdminActivity {
 		return $admins;
 	}
 
-	public function displayTable() {
-		$data = $this->getAdminStats();
+	public function displayTable($data) {
 		echo "<table class='wikitable sortable' border='1'>
 				<tr>
 					<th>UID</th>

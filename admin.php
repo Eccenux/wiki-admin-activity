@@ -23,4 +23,5 @@ $dbConfig['password'] = $arrSrcDb['password'];
 require_once './AdminActivity.php';
 
 $adminActivity = new AdminActivity($dbConfig);
-$adminActivity->displayTable();
+$data = $adminActivity->getAdminStats();
+$adminActivity->displayTable($data);
