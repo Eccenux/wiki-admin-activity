@@ -16,6 +16,9 @@ class AdminActivity {
 		}
 	}
 
+	private function sqlError() {
+		die("<p>Prepare failed: " . $this->conn->error); // Output MySQL error
+	}
 	public function getAdmins() {
 		$query = "SELECT user_id, actor_id, actor_name 
 				FROM user 
@@ -25,6 +28,9 @@ class AdminActivity {
 				)
 				ORDER BY actor_name";
 		$result = $this->conn->query($query);
+		if (!$result) {
+			$this->sqlError();
+		}
 		$admins = [];
 		while ($row = $result->fetch_assoc()) {
 			$admins[$row['actor_id']] = [
@@ -47,6 +53,9 @@ class AdminActivity {
 				WHERE page_namespace = 8
 				GROUP BY revactor_actor";
 		$result = $this->conn->query($query);
+		if (!$result) {
+			$this->sqlError();
+		}
 		$data = [];
 		while ($row = $result->fetch_assoc()) {
 			$data[$row['revactor_actor']] = $row['cnt'];
@@ -60,6 +69,9 @@ class AdminActivity {
 				WHERE log_type IN ('delete', 'block', 'protect')
 				GROUP BY log_type, log_actor";
 		$result = $this->conn->query($query);
+		if (!$result) {
+			$this->sqlError();
+		}
 		$data = [];
 		while ($row = $result->fetch_assoc()) {
 			$actor_id = $row['log_actor'];
