@@ -46,20 +46,23 @@ class AdminActivity {
 		return $admins;
 	}
 
-	public function getMediaWikiEdits($admins) {
+	public function getMediaWikiEdits($admins, $days=365) {
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$query = "SELECT rev_actor as revactor_actor, count(*) as cnt
 				FROM revision
 				LEFT JOIN page ON rev_page = page_id
 				WHERE page_namespace = 8
 					AND rev_actor IN ($placeholders)
+					AND rev_timestamp >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL ? DAY), '%Y%m%d%H%i%s')
 				GROUP BY rev_actor
 		";
 		$stmt = $this->conn->prepare($query);
 		if (!$stmt) {
 			$this->sqlError();
 		}
-		$stmt->bind_param(str_repeat('i', count($admins)), ...array_keys($admins));
+		$types = str_repeat('i', count($admins)) . 'i';
+		$params = array_merge(array_keys($admins), [$days]);
+		$stmt->bind_param($types, ...$params);
 		$stmt->execute();
 		$result = $stmt->get_result();
 	
@@ -71,19 +74,22 @@ class AdminActivity {
 		return $data;
 	}
 	
-	public function getAdminActions($admins) {
+	public function getAdminActions($admins, $days=365) {
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$query = "SELECT log_actor, log_type, count(*) as cnt
 				FROM logging
 				WHERE log_type IN ('delete', 'block', 'protect')
 					AND log_actor IN ($placeholders)
+					AND log_timestamp >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL ? DAY), '%Y%m%d%H%i%s')
 				GROUP BY log_type, log_actor
 		";
 		$stmt = $this->conn->prepare($query);
 		if (!$stmt) {
 			$this->sqlError();
 		}
-		$stmt->bind_param(str_repeat('i', count($admins)), ...array_keys($admins));
+		$types = str_repeat('i', count($admins)) . 'i';
+		$params = array_merge(array_keys($admins), [$days]);
+		$stmt->bind_param($types, ...$params);
 		$stmt->execute();
 		$result = $stmt->get_result();
 
