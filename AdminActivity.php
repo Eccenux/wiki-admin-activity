@@ -46,32 +46,47 @@ class AdminActivity {
 		return $admins;
 	}
 
-	public function getMediaWikiEdits() {
+	public function getMediaWikiEdits($admins) {
+		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$query = "SELECT rev_actor as revactor_actor, count(*) as cnt
 				FROM revision
 				LEFT JOIN page ON rev_page = page_id
 				WHERE page_namespace = 8
-				GROUP BY rev_actor";
-		$result = $this->conn->query($query);
-		if (!$result) {
+					AND rev_actor IN ($placeholders)
+				GROUP BY rev_actor
+		";
+		$stmt = $this->conn->prepare($query);
+		if (!$stmt) {
 			$this->sqlError();
 		}
+		$stmt->bind_param(str_repeat('i', count($admins)), ...array_keys($admins));
+		$stmt->execute();
+		$result = $stmt->get_result();
+	
 		$data = [];
 		while ($row = $result->fetch_assoc()) {
 			$data[$row['revactor_actor']] = $row['cnt'];
 		}
+	
 		return $data;
 	}
-
-	public function getAdminActions() {
+	
+	public function getAdminActions($admins) {
+		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$query = "SELECT log_actor, log_type, count(*) as cnt
 				FROM logging
 				WHERE log_type IN ('delete', 'block', 'protect')
-				GROUP BY log_type, log_actor";
-		$result = $this->conn->query($query);
-		if (!$result) {
+					AND log_actor IN ($placeholders)
+				GROUP BY log_type, log_actor
+		";
+		$stmt = $this->conn->prepare($query);
+		if (!$stmt) {
 			$this->sqlError();
 		}
+		$stmt->bind_param(str_repeat('i', count($admins)), ...array_keys($admins));
+		$stmt->execute();
+		$result = $stmt->get_result();
+
 		$data = [];
 		while ($row = $result->fetch_assoc()) {
 			$actor_id = $row['log_actor'];
@@ -92,8 +107,8 @@ class AdminActivity {
 
 	public function getAdminStats() {
 		$admins = $this->getAdmins();
-		$mwEdits = $this->getMediaWikiEdits();
-		$adminActions = $this->getAdminActions();
+		$mwEdits = $this->getMediaWikiEdits($admins);
+		$adminActions = $this->getAdminActions($admins);
 
 		foreach ($admins as $actor_id => &$admin) {
 			if (isset($mwEdits[$actor_id])) {
