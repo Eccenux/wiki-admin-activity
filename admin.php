@@ -1,6 +1,12 @@
 <?php
 /**
 	Aktywność adminów na plwiki.
+
+	Kiedy dany admin/user:
+	- wykonał ostatnią edycję w przestrzeni głównej (ns:0).
+	- wykonał ostatnią edycję w przestrzeni MediaWiki: (ns:8).
+	- wykonał ostatnią logowaną akcję administracyjną (last log action).
+	- wykonał ostatnią edycję zablokowanej strony (o ile da się to sprawdził).
 */
 echo "<p>Test";
 
