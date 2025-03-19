@@ -22,9 +22,9 @@ $password = $arrSrcDb['password'];
 $conn = new mysqli($host, $user, $password, $database);
 // Check connection
 if ($conn->connect_error) {
-    die("Błąd połączenia: " . $conn->connect_error);
+    die("<p>Błąd połączenia: " . $conn->connect_error);
 } else {
-    echo "Połączenie poprawne.<br>";
+    echo "<p>Połączenie poprawne.";
 }
 
 $user = 'Nux';
@@ -36,7 +36,7 @@ $query = "SELECT rev_timestamp, rev_page FROM revision_userindex
 		ORDER BY rev_timestamp DESC LIMIT 1";
 $stmt = $conn->prepare($query);
 if (!$stmt) {
-	die("Prepare failed: " . $conn->error); // Output MySQL error
+	die("<p>Prepare failed: " . $conn->error); // Output MySQL error
 }
 $stmt->bind_param("s", $user);
 $stmt->execute();
@@ -50,7 +50,7 @@ $query = "SELECT log_timestamp, log_type, log_action, log_title FROM logging_use
 		ORDER BY log_timestamp DESC LIMIT 1";
 $stmt = $conn->prepare($query);
 if (!$stmt) {
-	die("Prepare failed: " . $conn->error); // Output MySQL error
+	die("<p>Prepare failed: " . $conn->error); // Output MySQL error
 }
 $stmt->bind_param("s", $user);
 $stmt->execute();
