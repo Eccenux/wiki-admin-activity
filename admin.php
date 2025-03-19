@@ -20,8 +20,11 @@ $user = $arrSrcDb['user'];
 $password = $arrSrcDb['password'];
 
 $conn = new mysqli($host, $user, $password, $database);
+// Check connection
 if ($conn->connect_error) {
-	die("Błąd połączenia: " . $conn->connect_error);
+    die("Błąd połączenia: " . $conn->connect_error);
+} else {
+    echo "Połączenie poprawne.<br>";
 }
 
 $user = 'Nux';
@@ -32,6 +35,9 @@ $query = "SELECT rev_timestamp, rev_page FROM revision_userindex
 		WHERE rev_user_text = ? AND page_namespace = 0
 		ORDER BY rev_timestamp DESC LIMIT 1";
 $stmt = $conn->prepare($query);
+if (!$stmt) {
+	die("Prepare failed: " . $conn->error); // Output MySQL error
+}
 $stmt->bind_param("s", $user);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -43,6 +49,9 @@ $query = "SELECT log_timestamp, log_type, log_action, log_title FROM logging_use
 		WHERE log_user_text = ?
 		ORDER BY log_timestamp DESC LIMIT 1";
 $stmt = $conn->prepare($query);
+if (!$stmt) {
+	die("Prepare failed: " . $conn->error); // Output MySQL error
+}
 $stmt->bind_param("s", $user);
 $stmt->execute();
 $result = $stmt->get_result();
