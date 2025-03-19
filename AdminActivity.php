@@ -47,11 +47,11 @@ class AdminActivity {
 	}
 
 	public function getMediaWikiEdits() {
-		$query = "SELECT revactor_actor, count(*) as cnt
-				FROM revision_actor_temp 
-				LEFT JOIN page ON revactor_page = page_id
+		$query = "SELECT rev_actor as revactor_actor, count(*) as cnt
+				FROM revision
+				LEFT JOIN page ON rev_page = page_id
 				WHERE page_namespace = 8
-				GROUP BY revactor_actor";
+				GROUP BY rev_actor";
 		$result = $this->conn->query($query);
 		if (!$result) {
 			$this->sqlError();
