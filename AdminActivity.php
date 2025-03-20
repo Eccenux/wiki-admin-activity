@@ -110,8 +110,9 @@ class AdminActivity {
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 	
+		// Note! revision_userindex might be MUCH faster (e.g. 0.28 seconds vs 86.32 seconds for a single actor)
 		$query = "SELECT rev_actor as revactor_actor, count(*) as cnt
-				FROM revision
+				FROM revision_userindex
 				LEFT JOIN page ON rev_page = page_id
 				WHERE page_namespace = $ns
 					AND rev_actor IN ($placeholders)

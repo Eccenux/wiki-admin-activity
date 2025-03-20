@@ -7,6 +7,7 @@
 	- ✅Add links in the table (`...username=encod($...)`).
 	- ✅From username get actor_id.
 	- ✅Get same table.
+- ✅Optimize single user edits -> revision_userindex
 - Detailed checks for user (date-time):
 	- → README.md ←
 	- For each log etc show min/max timestamps.
@@ -18,6 +19,7 @@
 - ✅Icon: image by Jules78120 based on work by Alphos, Booyabazooka, and Essjay.
 
 ## Maybe
+- Weighted sum? (edits/10 + sum)
 - Prpepare a list of projects (for autocomplete or validation)?
 	- https://wikitech.wikimedia.org/wiki/Help:Wiki_Replicas#Connecting_to_the_database_replicas
 	- https://db-names.toolforge.org/
