@@ -14,10 +14,12 @@
 ## Should
 - ✅Some layout/structure (.tpl.php?) + CSS.
 - ✅Basic i18n.
-- Some sortable-table library.
+- ✅Some sortable-table library.
 
 ## Maybe
-- List of projects? (link on quarry)
+- Prpepare a list of projects (for autocomplete or validation)?
+	- https://wikitech.wikimedia.org/wiki/Help:Wiki_Replicas#Connecting_to_the_database_replicas
+	- https://db-names.toolforge.org/
 - Project from GET.
 	- Cache per dbname.
 	- Simple form?

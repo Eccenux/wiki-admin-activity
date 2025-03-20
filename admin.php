@@ -12,6 +12,8 @@ $arrSrcDb = $arrMyCnf['plwikidb'];
 
 $dbConfig = [];
 // $arrSrcDb['host'], $arrSrcDb['dbname']
+// https://wikitech.wikimedia.org/wiki/Help:Wiki_Replicas#Connecting_to_the_database_replicas
+// https://db-names.toolforge.org/
 $project = "plwiki";
 $dbConfig['host'] = $project.".web.db.svc.wikimedia.cloud";
 $dbConfig['database'] = $project."_p";

@@ -19,3 +19,4 @@
 	</div>
 </div>
 <div id="container">
+<script src="./view/sortable.js"></script>

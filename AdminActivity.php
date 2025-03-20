@@ -180,6 +180,7 @@ class AdminActivity {
 
 	public function renderTable($data) {
 		$html = "<table class='wikitable sortable' border='1'>
+			<thead>
 				<tr>
 					<th>UID</th>
 					<th>Admin</th>
@@ -189,9 +190,13 @@ class AdminActivity {
 					<th title='Edycje w przestrzeni nazw MediaWiki'>Edycje MW</th>
 					<th>Suma akcji</th>
 					<th title='Edycje w głównej przestrzeni nazw (ns:0)'>Edycje artykułów</th>
-				</tr>";
+				</tr>
+			</thead>
+			<tbody>
+		";
 		foreach ($data as $admin) {
-			$html .= "<tr>
+			$html .= "
+				<tr>
 					<td>{$admin['uid']}</td>
 					<td>{$admin['admin']}</td>
 					<td>{$admin['delete_restore']}</td>
@@ -200,9 +205,10 @@ class AdminActivity {
 					<td>{$admin['mediawiki_edits']}</td>
 					<td>{$admin['total']}</td>
 					<td>{$admin['main_edits']}</td>
-				</tr>";
+				</tr>
+			";
 		}
-		$html .= "</table>";
+		$html .= "</tbody></table>";
 		return $html;
 	}
 }
