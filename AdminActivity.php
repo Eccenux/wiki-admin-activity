@@ -195,10 +195,11 @@ class AdminActivity {
 			<tbody>
 		";
 		foreach ($data as $admin) {
+			$detUrl = "index.php?" . http_build_query(['action' => 'details', 'username' => $admin['admin']], '', '&amp;');
 			$html .= "
 				<tr>
 					<td>{$admin['uid']}</td>
-					<td>{$admin['admin']}</td>
+					<td><a href='{$detUrl}'>{$admin['admin']}</a></td>
 					<td>{$admin['delete_restore']}</td>
 					<td>{$admin['block_unblock_users']}</td>
 					<td>{$admin['protect_unprotect']}</td>
