@@ -6,6 +6,15 @@ define('NO_HACKING', 1);
 //header("Content-type: text/plain; charset=utf-8");
 require('./_top.php');
 
+//
+// Params
+//
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+$username = isset($_GET['username']) ? $_GET['username'] : '';
+
+//
+// DB config
+//
 /**/
 $arrMyCnf = parse_ini_file("../../.my.script.cnf", true);
 $arrSrcDb = $arrMyCnf['plwikidb'];
@@ -21,14 +30,24 @@ $dbConfig['user'] = $arrSrcDb['user'];
 $dbConfig['password'] = $arrSrcDb['password'];
 /**/
 
+//
+// Page config
+//
 $strPageTitle = L('AdminActivity:title');
 $contentHtml = '';
 
+//
+// Process
+//
 require_once './AdminActivity.php';
 
 $oTicks->pf_insTick('adminActivity');
 $adminActivity = new AdminActivity($dbConfig);
-$data = $adminActivity->getAdminStats();
+if ($action == 'details' && !empty($username)) {
+	$data = $adminActivity->getSingleAdminStats($username);
+} else {
+	$data = $adminActivity->getAdminStats();
+}
 $contentHtml = $adminActivity->renderTable($data);
 $oTicks->pf_endTick('adminActivity');
 

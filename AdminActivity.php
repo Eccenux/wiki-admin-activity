@@ -42,6 +42,10 @@ class AdminActivity {
 		if (!$result) {
 			$this->sqlError();
 		}
+
+		return $this->fetchAndPrepareAdmins($result);
+	}
+	private function fetchAndPrepareAdmins($result) {
 		$admins = [];
 		while ($row = $result->fetch_assoc()) {
 			$admins[$row['actor_id']] = [
@@ -57,21 +61,42 @@ class AdminActivity {
 		}
 		return $admins;
 	}
+	/** Get any actor by same structure as for admins (good for ex-admins). */
+	public function getActor($username) {
+		$query = "SELECT user_id, actor_id, actor_name 
+				FROM user 
+				INNER JOIN actor ON user_id = actor_user
+				WHERE actor_name LIKE ?
+		";
+		$stmt = $this->conn->prepare($query);
+		if (!$stmt) {
+			$this->sqlError();
+		}
+		$stmt->bind_param("s", $username);
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		return $this->fetchAndPrepareAdmins($result);
+	}
 
 	public function getMediaWikiEdits($admins, $days=365) {
 		return $this->getNamespaceEdits($admins, 8, $days);
 	}
 	public function getMainEdits($admins, $days=365) {
-		// try cache
-		$cache = $this->cache['main_edits'];
-		$cachedData = $cache->get();
-		if ($cachedData !== null) {
-			return $cachedData;
-		}
+		if (count($admins) > 10) {
+			// try cache
+			$cache = $this->cache['main_edits'];
+			$cachedData = $cache->get();
+			if ($cachedData !== null) {
+				return $cachedData;
+			}
 
-		// fresh data (+save in cache)
-		$data = $this->getNamespaceEdits($admins, 0, $days);
-		$cache->set($data);
+			// fresh data (+save in cache)
+			$data = $this->getNamespaceEdits($admins, 0, $days);
+			$cache->set($data);
+		} else {
+			$data = $this->getNamespaceEdits($admins, 0, $days);
+		}
 		return $data;
 	}
 
@@ -156,6 +181,9 @@ class AdminActivity {
 
 	public function getAdminStats() {
 		$admins = $this->getAdmins();
+		return $this->getBasicAdminStats($admins);
+	}
+	private function getBasicAdminStats($admins) {
 		$mwEdits = $this->getMediaWikiEdits($admins);
 		$mainEdits = $this->getMainEdits($admins);
 		$adminActions = $this->getAdminActions($admins);
@@ -176,6 +204,11 @@ class AdminActivity {
 		}
 
 		return $admins;
+	}
+
+	public function getSingleAdminStats($username) {
+		$admins = $this->getActor($username);
+		return $this->getBasicAdminStats($admins);
 	}
 
 	public function renderTable($data) {
