@@ -215,7 +215,8 @@ class AdminActivity {
 		$html = "<table class='wikitable sortable' border='1'>
 			<thead>
 				<tr>
-					<th>UID</th>
+					<th title='user_id'>UID</th>
+					<th title='actor_id'>AID</th>
 					<th>Admin</th>
 					<th>Usuwanie / Przywracanie</th>
 					<th>(Od)blokowanie osób</th>
@@ -227,11 +228,12 @@ class AdminActivity {
 			</thead>
 			<tbody>
 		";
-		foreach ($data as $admin) {
+		foreach ($data as $actor_id => $admin) {
 			$detUrl = "index.php?" . http_build_query(['action' => 'details', 'username' => $admin['admin']], '', '&amp;');
 			$html .= "
 				<tr>
 					<td>{$admin['uid']}</td>
+					<td>{$actor_id}</td>
 					<td><a href='{$detUrl}'>{$admin['admin']}</a></td>
 					<td>{$admin['delete_restore']}</td>
 					<td>{$admin['block_unblock_users']}</td>
