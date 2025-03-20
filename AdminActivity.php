@@ -178,8 +178,8 @@ class AdminActivity {
 		return $admins;
 	}
 
-	public function displayTable($data) {
-		echo "<table class='wikitable sortable' border='1'>
+	public function renderTable($data) {
+		$html = "<table class='wikitable sortable' border='1'>
 				<tr>
 					<th>UID</th>
 					<th>Admin</th>
@@ -191,7 +191,7 @@ class AdminActivity {
 					<th title='Edycje w głównej przestrzeni nazw (ns:0)'>Edycje artykułów</th>
 				</tr>";
 		foreach ($data as $admin) {
-			echo "<tr>
+			$html .= "<tr>
 					<td>{$admin['uid']}</td>
 					<td>{$admin['admin']}</td>
 					<td>{$admin['delete_restore']}</td>
@@ -202,6 +202,7 @@ class AdminActivity {
 					<td>{$admin['main_edits']}</td>
 				</tr>";
 		}
-		echo "</table>";
+		$html .= "</table>";
+		return $html;
 	}
 }

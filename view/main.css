@@ -1,0 +1,126 @@
+﻿/* main layout */
+html
+{
+	height:100%;
+	background-color: #eef;
+}
+body
+{
+	margin:0;
+	padding:0;
+	min-height:100%;
+	background-color:white;
+	font:14px sans-serif;
+	position:relative;
+}
+#header
+,#footer
+{
+	background-color: #cdc;
+}
+#header
+{
+	border-bottom:1px solid #9c9;
+	background-image:url(Headerbg.png);
+	background-repeat:no-repeat;
+	color:white;
+	height: 70px;
+}
+#header p
+{
+    font-size: 25px;
+    font-weight: bold;
+    margin: 0;
+    padding: 5px 70px;
+}
+#header .lang-switch
+{
+	float:right;
+	position: relative;
+	right: .8em;
+	top: -0.5em;
+}
+#header .lang-switch a
+{
+	padding:.5em;
+}
+#container
+{
+	background-color:white;
+	padding: 1em 1em 7em;	/* 1em + 6em (footer) */
+}
+#footer
+{
+	border-top:1px solid #9c9;
+	position:absolute;
+	bottom:0;
+	height: 6em;
+	width:100%;
+	color: #363;
+}
+#footer p
+{
+	margin:0;
+	padding:1em;
+}
+
+/* ticks */
+#footer #ticks
+{
+	margin:0;
+	padding:0 1em;
+	color: #9a9;
+}
+#ticks ul
+,#ticks li
+{
+	margin:0;
+	padding:0;
+	list-style: none;
+	list-style-image: none;
+	display: inline-block;
+}
+body #ticks li:first-child:before
+{
+	content:'';
+	padding:0;
+}
+#ticks li:before
+{
+	content:'•';
+	padding:0 .5em;
+}
+
+/* tables */
+table
+,table td
+,table th
+{
+	border:1px solid #363;
+	padding:.2em .4em;
+	vertical-align: top;
+}
+table
+{
+	border-collapse:collapse;
+	background-color:#fff;
+}
+table th
+{
+	vertical-align: bottom;
+	background-color:#f0f8f0;
+}
+
+/* dna */
+.extra_links
+{
+	font-size:90%;
+}
+.page_ok
+{
+	background-color:#cfc;
+}
+.page_small
+{
+	background-color:#fdd;
+}

@@ -6,17 +6,18 @@
 - Check for given admin/user:
 	- Add links in the table (`details.php?username=encod($...)`).
 	- From username get actor_id.
-	- Get same tabel.
-	- Get same tabel.
+	- Get same table.
+	- For each log etc show min/max timestamps.
 - Detailed checks for user:
 	- → README.md ←
 
 ## Should
-- Some layout/structure (.tpl.php?) + CSS.
+- ✅Some layout/structure (.tpl.php?) + CSS.
+- ✅Basic i18n.
 - Some sortable-table library.
 
 ## Maybe
-- List of projects?
+- List of projects? (link on quarry)
 - Project from GET.
 	- Cache per dbname.
 	- Simple form?
