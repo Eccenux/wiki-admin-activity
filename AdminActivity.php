@@ -66,7 +66,7 @@ class AdminActivity {
 		$query = "SELECT user_id, actor_id, actor_name 
 				FROM user 
 				INNER JOIN actor ON user_id = actor_user
-				WHERE actor_name LIKE ?
+				WHERE actor_name = ?
 		";
 		$stmt = $this->conn->prepare($query);
 		if (!$stmt) {
@@ -146,7 +146,7 @@ class AdminActivity {
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 
 		$query = "SELECT log_actor, log_type, count(*) as cnt
-				FROM logging
+				FROM logging_userindex
 				WHERE log_type IN ('delete', 'block', 'protect')
 					AND log_actor IN ($placeholders)
 					AND log_timestamp >= ?

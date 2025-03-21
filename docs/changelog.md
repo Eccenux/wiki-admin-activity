@@ -8,6 +8,9 @@
 	- ✅From username get actor_id.
 	- ✅Get same table.
 - ✅Optimize single user edits -> revision_userindex
+- ✅Optimize log query by using special views. As per quarry: https://quarry.wmcloud.org/query/91886
+- Verify admin actions
+	- Will have to use `log_action` too. 
 - Detailed checks for user (date-time):
 	- → README.md ←
 	- For each log etc show min/max timestamps.
@@ -20,8 +23,6 @@
 - ✅Icon: image by Jules78120 based on work by Alphos, Booyabazooka, and Essjay.
 - ✅Link to go back to main view (from details).
 - Show date range (below the table?).
-- Split logs into subtypes (by `log_action`)? https://quarry.wmcloud.org/query/91886
-- Optimize log query by usinbg views? As per above quarry.
 
 ## Maybe
 - Weighted sum? (edits/10 + sum)
