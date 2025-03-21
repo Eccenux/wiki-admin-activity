@@ -44,11 +44,12 @@ require_once './AdminActivity.php';
 $oTicks->pf_insTick('adminActivity');
 $adminActivity = new AdminActivity($dbConfig);
 if ($action == 'details' && !empty($username)) {
+	$contentHtml .= '<bcrumbs>&lt; <a href="?">'.L('Main table').'</a></bcrumbs>';
 	$data = $adminActivity->getSingleAdminStats($username);
 } else {
 	$data = $adminActivity->getAdminStats();
 }
-$contentHtml = $adminActivity->renderTable($data);
+$contentHtml .= $adminActivity->renderTable($data);
 $oTicks->pf_endTick('adminActivity');
 
 //

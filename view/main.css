@@ -25,24 +25,24 @@ body
 	background-repeat:no-repeat;
 	color:white;
 	height: 70px;
-}
-#header p
-{
-    font-size: 25px;
-    font-weight: bold;
-    margin: 0;
-    padding: 5px 70px;
-}
-#header .lang-switch
-{
-	float:right;
-	position: relative;
-	right: .8em;
-	top: -0.5em;
-}
-#header .lang-switch a
-{
-	padding:.5em;
+	p
+	{
+		font-size: 25px;
+		font-weight: bold;
+		margin: 0;
+		padding: 5px 70px;
+	}
+	.lang-switch
+	{
+		float:right;
+		position: relative;
+		right: .8em;
+		top: -0.5em;
+		a
+		{
+			padding:.5em;
+		}
+	}
 }
 #container
 {
@@ -111,16 +111,10 @@ table th
 	background-color:#f0f8f0;
 }
 
-/* dna */
-.extra_links
+/* other */
+bcrumbs
 {
-	font-size:90%;
-}
-.page_ok
-{
-	background-color:#cfc;
-}
-.page_small
-{
-	background-color:#fdd;
+	display: block;
+	margin: 0 0 1em -.5em;
+	font-size: 90%;
 }
