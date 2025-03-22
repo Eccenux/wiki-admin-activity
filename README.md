@@ -4,6 +4,7 @@ Aktywność adminów i adminek Wikipedii, głównie plwiki, ale może też dla i
 
 Powiązane:
 - [Changelog](./docs/changelog.md) – opis zmian w programie (en).
+- [Notes](./docs/notes.md) – notatki techniczne, mogą być chaotyczne.
 
 ### Zestawienie aktywności za ostatni rok
 

@@ -17,21 +17,6 @@
 	- → README.md ←
 	- For each log etc show min/max timestamps.
 
-adminstats
-https://xtools.wmcloud.org/adminstats/pl.wikipedia.org/2024-03-23/2025-03-22?actions=delete
-|revision-delete
-|log-delete
-|restore
-|re-block
-|unblock
-|re-protect
-|unprotect
-|rights
-|merge
-|import
-|abusefilter
-|contentmodel
-
 ## Should
 - ✅Some layout/structure (.tpl.php?) + CSS.
 - ✅Basic i18n.
