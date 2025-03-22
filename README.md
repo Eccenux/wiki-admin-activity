@@ -1,4 +1,4 @@
-## Aktywność adminów Wikipedii
+## Aktywność adminów Wikipedii (AdminActivity)
 
 Aktywność adminów i adminek Wikipedii, głównie plwiki, ale może też dla innych.
 
