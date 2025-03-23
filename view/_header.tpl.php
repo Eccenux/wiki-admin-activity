@@ -9,7 +9,7 @@
 	<meta name="copyright" content="Maciej Jaros">
 
 	<link rel="icon" type="image/svg+xml" href="view/Gold-Admin.svg">
-	<link rel="stylesheet" type="text/css" href="view/main.css">
+	<link rel="stylesheet" type="text/css" href="view/main.css?0029">
 </head>
 <body>
 <div id="header">
