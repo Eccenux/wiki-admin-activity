@@ -54,6 +54,7 @@ class AdminActivity {
 				'delete' => 0,
 				'block' => 0,
 				'protect' => 0,
+				'other' => 0,
 				'mediawiki_edits' => 0,
 				'main_edits' => 0,
 				'total' => 0
@@ -146,17 +147,22 @@ class AdminActivity {
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 
-		$query = "SELECT log_actor, log_type
+		// base actions
+		$query = <<<EOS
+				SELECT log_actor, log_type
 					, count(*) as cnt
 					, LEFT(min(log_timestamp), 8) as min_t
 					, LEFT(max(log_timestamp), 8) as max_t
 					, min(log_id) as min_id, max(log_id) as max_id
 				FROM logging_userindex
-				WHERE (log_type IN ('delete', 'block', 'protect') AND log_action <> 'delete_redir')
-					AND log_actor IN ($placeholders)
+				WHERE log_actor IN ($placeholders)
 					AND log_timestamp >= ?
+					AND (
+						log_type IN ('block', 'protect')
+						OR (log_type = 'delete' AND log_action <> 'delete_redir')
+					)
 				GROUP BY log_type, log_actor
-		";
+		EOS;
 		$stmt = $this->conn->prepare($query);
 		if (!$stmt) {
 			$this->sqlError();
@@ -172,10 +178,47 @@ class AdminActivity {
 			$actor_id = $row['log_actor'];
 			$count = $row['cnt'];
 			if (!isset($data[$actor_id])) {
-				$data[$actor_id] = ['delete' => 0, 'block' => 0, 'protect' => 0];
+				$data[$actor_id] = ['delete' => 0, 'block' => 0, 'protect' => 0, 'other' => 0];
 			}
+			//if ( in_array($row['log_type'], ['delete', 'block', 'protect']) ) {
 			$data[$actor_id][$row['log_type']] = $count;
 		}
+
+		// other
+		$query = <<<EOS
+				SELECT log_actor
+					, count(*) as cnt
+					, LEFT(min(log_timestamp), 8) as min_t
+					, LEFT(max(log_timestamp), 8) as max_t
+					, min(log_id) as min_id, max(log_id) as max_id
+				FROM logging_userindex
+				WHERE log_actor IN ($placeholders)
+					AND log_timestamp >= ?
+					AND (
+						log_type IN ('abusefilter', 'contentmodel', 'gblblock', 'managetags', 'newusers')
+						OR log_action IN ('patrol', 'rights', 'setmentor', 'merge')
+						OR (log_type = 'massmessage' AND log_action = 'send')
+						OR (log_action = 'move'  AND log_params LIKE '%s:10:"5::noredir";s:1:"1"%')
+					)
+				GROUP BY log_actor
+		EOS;
+		$stmt = $this->conn->prepare($query);
+		if (!$stmt) {
+			$this->sqlError();
+		}
+		$stmt->bind_param($types, ...$params);
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		while ($row = $result->fetch_assoc()) {
+			$actor_id = $row['log_actor'];
+			$count = $row['cnt'];
+			if (!isset($data[$actor_id])) {
+				$data[$actor_id] = ['delete' => 0, 'block' => 0, 'protect' => 0, 'other' => 0];
+			}
+			$data[$actor_id]['other'] = $count;
+		}
+
 		return $data;
 	}
 
@@ -189,18 +232,21 @@ class AdminActivity {
 		$adminActions = $this->getAdminActions($admins);
 
 		foreach ($admins as $actor_id => &$admin) {
+			$sum = 0;
 			if (isset($mwEdits[$actor_id])) {
 				$admin['mediawiki_edits'] = $mwEdits[$actor_id];
+				$sum += $mwEdits[$actor_id];
 			}
 			if (isset($mainEdits[$actor_id])) {
 				$admin['main_edits'] = $mainEdits[$actor_id];
 			}
 			if (isset($adminActions[$actor_id])) {
-				$admin['delete'] = $adminActions[$actor_id]['delete'];
-				$admin['block'] = $adminActions[$actor_id]['block'];
-				$admin['protect'] = $adminActions[$actor_id]['protect'];
+				foreach($adminActions[$actor_id] as $key => $value) {
+					$admin[$key] = $value;
+					$sum += $value;
+				}
 			}
-			$admin['total'] = $admin['delete'] + $admin['block'] + $admin['protect'] + $admin['mediawiki_edits'];
+			$admin['total'] = $sum;
 		}
 
 		return $admins;
@@ -224,6 +270,7 @@ class AdminActivity {
 					<th>Usuwanie / Przywracanie</th>
 					<th>(Od)blokowanie osób</th>
 					<th>(Od)blokowanie stron</th>
+					<th title='Inne akcje administracyjne zapisane w logach'>Inne logowane</th>
 					<th title='Edycje w przestrzeni nazw MediaWiki'>Edycje MW</th>
 					<th>Suma akcji</th>
 					<th title='Edycje w głównej przestrzeni nazw (ns:0)'>Edycje artykułów</th>
@@ -247,6 +294,7 @@ class AdminActivity {
 					<td>{$admin['delete']}</td>
 					<td>{$admin['block']}</td>
 					<td>{$admin['protect']}</td>
+					<td>{$admin['other']}</td>
 					<td>{$admin['mediawiki_edits']}</td>
 					<td>{$admin['total']}</td>
 					<td>{$admin['main_edits']}</td>
