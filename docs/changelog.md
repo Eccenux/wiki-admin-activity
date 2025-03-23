@@ -13,8 +13,10 @@
 - Verify admin actions
 	- ✅Notes on possible admin-actions registered in logging.
 	- ✅Filter out `delete` - `delete_redir` a simple user action (not to be confused with suppressredirect).
+	- ✅Others PoC.
 	- Verify less popular actions.
 	- Add suppressredirect and others (on main if perfomance is OK, or at least on details view).
+- Use print_table?
 - Detailed checks for user (date-time):
 	- → README.md ←
 	- For each log etc show min/max timestamps.

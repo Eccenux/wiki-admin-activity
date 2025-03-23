@@ -159,7 +159,7 @@ class AdminActivity {
 					AND log_timestamp >= ?
 					AND (
 						log_type IN ('block', 'protect')
-						OR (log_type = 'delete' AND log_action <> 'delete_redir')
+						OR (log_type = 'delete' AND (log_action IS NULL OR log_action != 'delete_redir'))
 					)
 				GROUP BY log_type, log_actor
 		EOS;
