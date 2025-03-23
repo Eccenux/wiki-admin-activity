@@ -41,10 +41,11 @@ https://quarry.wmcloud.org/query/91955
 |            delete |  flow-delete-topic | .
 |            delete |            restore | .
 |            delete |           revision | .
+|            delete |                    | . (some of this seems to have null log_action: https://quarry.wmcloud.org/query/91965)
 |             block |              block | probably all by log_type
 |             block |            reblock | .
 |             block |            unblock | .
-|             block |                    | . (some of this seems to have null log_action; many of them for actor: 538183 [Filtr nadużyć])
+|             block |                    | . (some of this seems to have null log_action: https://quarry.wmcloud.org/query/91965)
 |           protect |             modify | probably all by log_type
 |           protect |          move_prot | .
 |           protect |            protect | .
