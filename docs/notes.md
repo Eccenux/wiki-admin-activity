@@ -4,21 +4,123 @@
 	- https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154750&uselang=en
 	- move page $X to $Y without leaving a redirect
 	- right: suppressredirect
+	- https://gerrit.wikimedia.org/g/mediawiki/core/+/68ab52fb5ee2c29541dbfe2011d419c45f1e5857/includes/logging/MoveLogFormatter.php#121
 - delte-delete_redir is not an admin action, can be done by editors:
 	- https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154847&uselang=en
 	- deleted redirect $X by overwriting
+
+## Actions
+
+Columns:
+- log_type IN ('delete', 'block', 'protect')
+- log_action aka subtype
+
+Standard (log_type: log_action):
+- protect (all?): modify, move_prot, protect, unprotect
+
+Other (most probably admin actions, but seem less common or less imporant):
+- abusefilter: create, modify
+
+logdelete, reprotect, rights, merge, import, abusefilter, contentmodel
+
+Special (log_type - log_action):
+- suppressredirect: move-move (maybe move-move_redir) + log_params LIKE '%s:10:"5::noredir";s:1:"1"%'
+	- move-move suppression https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154750&uselang=en
+	- move-move no-suppression https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=13263280&uselang=en
+	- counting: https://quarry.wmcloud.org/query/91957
+
+Based on:
+https://quarry.wmcloud.org/query/91955
+
+**Standard**:
+^          log_type ^         log_action ^ notes                                                            ^
+|            delete |                 ~* | log_action NOT IN ('delete_redir')
+|            delete |             delete | .
+|            delete |              event | .
+|            delete |   flow-delete-post | .
+|            delete |  flow-delete-topic | .
+|            delete |            restore | .
+|            delete |           revision | .
+|             block |              block | probably all by log_type
+|             block |            reblock | .
+|             block |            unblock | .
+|           protect |             modify | probably all by log_type
+|           protect |          move_prot | .
+|           protect |            protect | .
+|           protect |          unprotect | .
+
+**Other admin actions** (most probably admin actions, but seem less common or less imporant):
+^          log_type ^         log_action ^ notes                                                            ^
+|       abusefilter |             create | probably all by log_type
+|       abusefilter |             modify | .
+|      contentmodel |             change | probably all by log_type
+|      contentmodel |                new | .
+|            patrol |             patrol | by log_action
+|              move |               move | Only with special params (see suppressredirect notes).
+|            rights |             rights | Should filter. Might be non-admin actionn when user downgrade's self.
+|                 . |                  . | Propbably shouldn't register self-downgrades as a significant admin action anyway.
+| growthexperiments |          setmentor | by log_action (setmentor)
+|       massmessage |               send | Send a message to multiple users at once (massmessage)
+|             merge |              merge | by log_action
+
+**To check**:
+^          log_type ^         log_action ^ notes                                                            ^
+|          gblblock |         dwhitelist | Probably (right: globalblock-whitelist)
+|          gblblock |          whitelist | Probably (right: globalblock-whitelist)
+|        managetags |             create | Probably (right: managechangetags?)
+|        managetags |         deactivate | Probably (right: managechangetags?)
+|        managetags |             delete | Probably (right: managechangetags?)
+|          newusers |            byemail | Probably (right: createaccount?)
+|          newusers |            create2 | Probably (right: createaccount?)
+|          newusers |   forcecreatelocal | Probably (right: createaccount?)
+|        renameuser |         renameuser | Probably not (steward?)
+| growthexperiments |            addlink | Probably not
+| growthexperiments |        claimmentee | Probably not
+|               tag |             update | Probably not
+
+**Ignore**:
+|              lock |    flow-lock-topic | Flow is being removed...
+|              lock | flow-restore-topic | .
+
+**Nope**:
+^          log_type ^         log_action ^ notes                                                            ^
+|              move |         move_redir |
+|            create |             create |
+|            review |                  * |
+|            thanks |                  * |
+
+## Logging table
+
+logging - slow table
+logging_userindex - fast view
+
+`DESCRIBE logging_userindex`
+```tsv
+log_id	int(10) unsigned	NO
+log_type	varbinary(32)	NO
+log_action	varbinary(32)	YES
+log_timestamp	binary(14)	NO
+log_actor	bigint(20) unsigned	NO
+log_namespace	int(11)	YES
+log_title	varbinary(255)	YES
+log_comment_id	decimal(20,0)	NO
+log_params	blob	YES
+log_deleted	tinyint(3) unsigned	NO
+log_page	int(10) unsigned	YES
+```
 
 ## AdminStats
 
 Admin stats allows choosing stats, but has na option to just show all.
 
-https://xtools.wmcloud.org/adminstats/pl.wikipedia.org/2024-03-23/2025-03-22?actions=delete
-	|revision-delete
-	|log-delete
+https://xtools.wmcloud.org/adminstats/pl.wikipedia.org/2024-03-23/2025-03-22?actions
+	=delete
+	|revisiondelete
+	|logdelete
 	|restore
-	|re-block
+	|reblock
 	|unblock
-	|re-protect
+	|reprotect
 	|unprotect
 	|rights
 	|merge
@@ -27,7 +129,7 @@ https://xtools.wmcloud.org/adminstats/pl.wikipedia.org/2024-03-23/2025-03-22?act
 	|contentmodel
 
 Defaults:
-delete, revision delete, log delete, restore, (re)block, unblock, (re)protect, unprotect, rights, merge, import, abusefilter, content model
+delete, revisiondelete, logdelete, restore, reblock, unblock, reprotect, unprotect, rights, merge, import, abusefilter, contentmodel
 
 ## Stewardry
 
