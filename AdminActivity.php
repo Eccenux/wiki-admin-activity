@@ -51,9 +51,9 @@ class AdminActivity {
 			$admins[$row['actor_id']] = [
 				'uid' => $row['user_id'],
 				'admin' => $row['actor_name'],
-				'delete_restore' => 0,
-				'block_unblock_users' => 0,
-				'protect_unprotect' => 0,
+				'delete' => 0,
+				'block' => 0,
+				'protect' => 0,
 				'mediawiki_edits' => 0,
 				'main_edits' => 0,
 				'total' => 0
@@ -137,6 +137,7 @@ class AdminActivity {
 		return $data;
 	}
 
+	/** Standard admin actions: delete, block, protect. */
 	public function getAdminActions($admins, $days=365) {
 		if (!is_int($days) || $days < 0) {
 			return [];
@@ -145,9 +146,13 @@ class AdminActivity {
 		$placeholders = implode(',', array_fill(0, count($admins), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 
-		$query = "SELECT log_actor, log_type, count(*) as cnt
+		$query = "SELECT log_actor, log_type
+					, count(*) as cnt
+					, LEFT(min(log_timestamp), 8) as min_t
+					, LEFT(max(log_timestamp), 8) as max_t
+					, min(log_id) as min_id, max(log_id) as max_id
 				FROM logging_userindex
-				WHERE log_type IN ('delete', 'block', 'protect')
+				WHERE (log_type IN ('delete', 'block', 'protect') AND log_action <> 'delete_redir')
 					AND log_actor IN ($placeholders)
 					AND log_timestamp >= ?
 				GROUP BY log_type, log_actor
@@ -167,15 +172,9 @@ class AdminActivity {
 			$actor_id = $row['log_actor'];
 			$count = $row['cnt'];
 			if (!isset($data[$actor_id])) {
-				$data[$actor_id] = ['delete_restore' => 0, 'block_unblock_users' => 0, 'protect_unprotect' => 0];
+				$data[$actor_id] = ['delete' => 0, 'block' => 0, 'protect' => 0];
 			}
-			if ($row['log_type'] == 'delete') {
-				$data[$actor_id]['delete_restore'] = $count;
-			} elseif ($row['log_type'] == 'block') {
-				$data[$actor_id]['block_unblock_users'] = $count;
-			} elseif ($row['log_type'] == 'protect') {
-				$data[$actor_id]['protect_unprotect'] = $count;
-			}
+			$data[$actor_id][$row['log_type']] = $count;
 		}
 		return $data;
 	}
@@ -197,11 +196,11 @@ class AdminActivity {
 				$admin['main_edits'] = $mainEdits[$actor_id];
 			}
 			if (isset($adminActions[$actor_id])) {
-				$admin['delete_restore'] = $adminActions[$actor_id]['delete_restore'];
-				$admin['block_unblock_users'] = $adminActions[$actor_id]['block_unblock_users'];
-				$admin['protect_unprotect'] = $adminActions[$actor_id]['protect_unprotect'];
+				$admin['delete'] = $adminActions[$actor_id]['delete'];
+				$admin['block'] = $adminActions[$actor_id]['block'];
+				$admin['protect'] = $adminActions[$actor_id]['protect'];
 			}
-			$admin['total'] = $admin['delete_restore'] + $admin['block_unblock_users'] + $admin['protect_unprotect'] + $admin['mediawiki_edits'];
+			$admin['total'] = $admin['delete'] + $admin['block'] + $admin['protect'] + $admin['mediawiki_edits'];
 		}
 
 		return $admins;
@@ -213,12 +212,15 @@ class AdminActivity {
 	}
 
 	public function renderTable($data) {
-		$html = "<table class='wikitable sortable' border='1'>
+		$is_single = count($data) == 1;
+		$name_head = ($is_single) ? "User" : "Admin";
+		$html = <<<EOS
+			<table class='wikitable sortable' border='1'>
 			<thead>
 				<tr>
 					<th title='user_id'>UID</th>
 					<th title='actor_id'>AID</th>
-					<th>Admin</th>
+					<th>{$name_head}</th>
 					<th>Usuwanie / Przywracanie</th>
 					<th>(Od)blokowanie osób</th>
 					<th>(Od)blokowanie stron</th>
@@ -228,22 +230,28 @@ class AdminActivity {
 				</tr>
 			</thead>
 			<tbody>
-		";
+		EOS;
 		foreach ($data as $actor_id => $admin) {
-			$detUrl = "index.php?" . http_build_query(['action' => 'details', 'username' => $admin['admin']], '', '&amp;');
-			$html .= "
+			if ($is_single) {
+				$name_cell = $admin['admin'];
+			} else {
+				$detUrl = "index.php?" . http_build_query(['action' => 'details', 'username' => $admin['admin']], '', '&amp;');
+				$name_cell = "<a href='{$detUrl}'>{$admin['admin']}</a>";
+			}
+
+			$html .= <<<EOS
 				<tr>
 					<td>{$admin['uid']}</td>
 					<td>{$actor_id}</td>
-					<td><a href='{$detUrl}'>{$admin['admin']}</a></td>
-					<td>{$admin['delete_restore']}</td>
-					<td>{$admin['block_unblock_users']}</td>
-					<td>{$admin['protect_unprotect']}</td>
+					<td>{$name_cell}</td>
+					<td>{$admin['delete']}</td>
+					<td>{$admin['block']}</td>
+					<td>{$admin['protect']}</td>
 					<td>{$admin['mediawiki_edits']}</td>
 					<td>{$admin['total']}</td>
 					<td>{$admin['main_edits']}</td>
 				</tr>
-			";
+			EOS;
 		}
 		$html .= "</tbody></table>";
 		return $html;

@@ -11,8 +11,10 @@
 - ✅Optimize log query by using special views. As per quarry: https://quarry.wmcloud.org/query/91886
 - ✅Add new dirs (`_temp` and `_adm`) to gitignore of the authors repo.
 - Verify admin actions
-	- Will have to use `log_action` too as `delete-delete_redir` is a type-action that an editor can do too (not to be confused with suppressredirect).
-	- suppressredirect on the other hand is a move-move log.
+	- ✅Notes on possible admin-actions registered in logging.
+	- ✅Filter out `delete` - `delete_redir` a simple user action (not to be confused with suppressredirect).
+	- Verify less popular actions.
+	- Add suppressredirect and others (on main if perfomance is OK, or at least on details view).
 - Detailed checks for user (date-time):
 	- → README.md ←
 	- For each log etc show min/max timestamps.
