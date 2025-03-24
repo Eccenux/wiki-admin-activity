@@ -33,7 +33,7 @@ Based on:
 https://quarry.wmcloud.org/query/91955
 
 **Standard**:
-^          log_type ^         log_action ^ notes                                                            ^
+^          log_type ^         log_action ^ note  ^
 |            delete |                 ~* | log_action NOT IN ('delete_redir')
 |            delete |             delete | .
 |            delete |              event | .
@@ -52,7 +52,7 @@ https://quarry.wmcloud.org/query/91955
 |           protect |          unprotect | .
 
 **Other admin actions** (most probably admin actions, but seem less common or less imporant):
-^          log_type ^         log_action ^ notes                                                            ^
+^          log_type ^         log_action ^ note  ^
 |       abusefilter |             create | probably all by log_type
 |       abusefilter |             modify | .
 |      contentmodel |             change | probably all by log_type
@@ -64,32 +64,29 @@ https://quarry.wmcloud.org/query/91955
 | growthexperiments |          setmentor | by log_action (setmentor)
 |       massmessage |               send | Send a message to multiple users at once (massmessage)
 |             merge |              merge | by log_action
-
-**To check**:
-^          log_type ^         log_action ^ notes                                                            ^
-|          gblblock |         dwhitelist | Probably (right: globalblock-whitelist)
-|          gblblock |          whitelist | Probably (right: globalblock-whitelist)
-|        managetags |             create | Probably (right: managechangetags?)
-|        managetags |         deactivate | Probably (right: managechangetags?)
-|        managetags |             delete | Probably (right: managechangetags?)
-|          newusers |            byemail | Probably (right: createaccount?)
-|          newusers |            create2 | Probably (right: createaccount?)
-|          newusers |   forcecreatelocal | Probably (right: createaccount?)
-|        renameuser |         renameuser | Probably not (steward?)
-| growthexperiments |            addlink | Probably not
-| growthexperiments |        claimmentee | Probably not
-|               tag |             update | Probably not
+|          gblblock |         dwhitelist | (right: globalblock-whitelist)
+|          gblblock |          whitelist | (right: globalblock-whitelist)
+|        managetags |             create | [[Special:Tags]] (right: managechangetags)
+|        managetags |         deactivate | [[Special:Tags]] (right: managechangetags)
+|        managetags |             delete | [[Special:Tags]] (right: managechangetags)
+|               tag |             update | [[Special:EditTags]]
 
 **Ignore**:
 |              lock |    flow-lock-topic | Flow is being removed...
 |              lock | flow-restore-topic | .
 
 **Nope**:
-^          log_type ^         log_action ^ notes                                                            ^
+^          log_type ^         log_action ^ note  ^
 |              move |         move_redir |
 |            create |             create |
 |            review |                  * |
 |            thanks |                  * |
+|          newusers |            byemail | Seems like a common right to create an account for someone. [[Special:CreateAccount]]
+|          newusers |            create2 | Same?
+|          newusers |   forcecreatelocal | Same?
+|        renameuser |         renameuser | Global rename is done by global renamers and stewards.
+| growthexperiments |            addlink | Newcomer task
+| growthexperiments |        claimmentee | Any mentor via [[Special:ClaimMentee]]
 
 ## Logging table
 

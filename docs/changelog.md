@@ -10,12 +10,12 @@
 - ✅Optimize single user edits -> revision_userindex
 - ✅Optimize log query by using special views. As per quarry: https://quarry.wmcloud.org/query/91886
 - ✅Add new dirs (`_temp` and `_adm`) to gitignore of the authors repo.
-- Verify admin actions
+- ✅Verify admin actions
 	- ✅Notes on possible admin-actions registered in logging.
 	- ✅Filter out `delete` - `delete_redir` a simple user action (not to be confused with suppressredirect).
 	- ✅Others PoC.
-	- Verify less popular actions.
-	- Add suppressredirect and others (on main if perfomance is OK, or at least on details view).
+	- ✅Verify less popular actions.
+	- ✅Add suppressredirect and others (on main if perfomance is OK, or at least on details view).
 - Use print_table?
 - Detailed checks for user (date-time):
 	- → README.md ←

@@ -195,9 +195,10 @@ class AdminActivity {
 				WHERE log_actor IN ($placeholders)
 					AND log_timestamp >= ?
 					AND (
-						log_type IN ('abusefilter', 'contentmodel', 'gblblock', 'managetags', 'newusers')
+						log_type IN ('abusefilter', 'contentmodel', 'gblblock', 'managetags')
 						OR log_action IN ('patrol', 'rights', 'setmentor', 'merge')
 						OR (log_type = 'massmessage' AND log_action = 'send')
+						OR (log_type = 'tag' AND log_action = 'update')
 						OR (log_action = 'move'  AND log_params LIKE '%s:10:"5::noredir";s:1:"1"%')
 					)
 				GROUP BY log_actor
