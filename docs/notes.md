@@ -1,33 +1,34 @@
-# Admin actions?
+Links to various stats on plwiki: https://pl.wikipedia.org/wiki/Wikipedia:Odbieranie_uprawnie%C5%84_nieaktywnym_u%C5%BCytkownikom#Administratorzy
+- https://pl.wikipedia.org/wiki/Wikipedia:Administratorzy/Nieaktywno%C5%9B%C4%87/Lista
+- https://xtools.wmcloud.org/adminstats/pl.wikipedia.org/2024-03-23/2025-03-22?uselang=pl
+- https://meta.toolforge.org/stewardry/plwiki?sysop=1
+
+Sysop rights on plwiki (see also [List of admin rights](#list-of-admin-rights)):
+https://pl.wikipedia.org/wiki/Special:Listgrouprights?uselang=en#sysop
+
+## Move as an Admin action?
 
 - move-move can be an admin action:
-	- https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154750&uselang=en
+	- Example log by id: https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154750&uselang=en
 	- move page $X to $Y without leaving a redirect
 	- right: suppressredirect
 	- https://gerrit.wikimedia.org/g/mediawiki/core/+/68ab52fb5ee2c29541dbfe2011d419c45f1e5857/includes/logging/MoveLogFormatter.php#121
-- delte-delete_redir is not an admin action, can be done by editors:
-	- https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154847&uselang=en
+- delte-delete_redir is *not* an admin action, can be done by editors:
+	- Example log by id: https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154847&uselang=en
 	- deleted redirect $X by overwriting
 
-## Actions
-
-Columns:
-- log_type IN ('delete', 'block', 'protect')
-- log_action aka subtype
-
-Standard (log_type: log_action):
-- protect (all?): modify, move_prot, protect, unprotect
-
-Other (most probably admin actions, but seem less common or less imporant):
-- abusefilter: create, modify
-
-logdelete, reprotect, rights, merge, import, abusefilter, contentmodel
-
-Special (log_type - log_action):
-- suppressredirect: move-move (maybe move-move_redir) + log_params LIKE '%s:10:"5::noredir";s:1:"1"%'
+The difference beween simple move and move with suppression
 	- move-move suppression https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=51154750&uselang=en
 	- move-move no-suppression https://pl.wikipedia.org/w/index.php?title=Specjalna:Rejestr&logid=13263280&uselang=en
 	- counting: https://quarry.wmcloud.org/query/91957
+
+The difference is in `log_params`:
+`log_params LIKE '%s:10:"5::noredir";s:1:"1"%'`
+(where noredir is a key and `"1"` is a value)
+`log_params LIKE '%s:10:"5::noredir";s:1:"0"%'`
+(where `"0"` means no-suppression)
+
+## All actions
 
 Based on:
 https://quarry.wmcloud.org/query/91955
