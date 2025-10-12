@@ -1,5 +1,6 @@
 <?php
-require_once './SimpleCache.php';
+require_once './lib/SimpleCache.php';
+require_once './lib/MediawikiConst.php';
 
 class AdminActivity {
 	private $conn;
@@ -30,6 +31,12 @@ class AdminActivity {
 	private function sqlError() {
 		die("<p>Prepare failed: " . $this->conn->error); // Output MySQL error
 	}
+
+	/**
+	 * Admin list.
+	 *
+	 * @return Admin list with placeholder values for stats.
+	 */
 	public function getAdmins() {
 		$query = "SELECT user_id, actor_id, actor_name 
 				FROM user 
@@ -37,7 +44,8 @@ class AdminActivity {
 				WHERE user_id IN (
 					SELECT ug_user FROM user_groups WHERE ug_group = 'sysop'
 				)
-				ORDER BY actor_name";
+				ORDER BY user_id";
+				//ORDER BY actor_name";
 		$result = $this->conn->query($query);
 		if (!$result) {
 			$this->sqlError();
@@ -62,7 +70,12 @@ class AdminActivity {
 		}
 		return $admins;
 	}
-	/** Get any actor by same structure as for admins (good for ex-admins). */
+
+	/**
+	 * Get any actor with admin-like data (good for ex-admins).
+	 * 
+	 * @return Same list as for `getAdmins()`.
+	 */
 	public function getActor($username) {
 		$query = "SELECT user_id, actor_id, actor_name 
 				FROM user 
@@ -81,7 +94,7 @@ class AdminActivity {
 	}
 
 	public function getMediaWikiEdits($admins, $days=365) {
-		return $this->getNamespaceEdits($admins, 8, $days);
+		return $this->getNamespaceEdits($admins, MediawikiConst::NS_MEDIAWIKI, $days);
 	}
 	public function getMainEdits($admins, $days=365) {
 		if (count($admins) > 10) {
@@ -93,10 +106,10 @@ class AdminActivity {
 			}
 
 			// fresh data (+save in cache)
-			$data = $this->getNamespaceEdits($admins, 0, $days);
+			$data = $this->getNamespaceEdits($admins, MediawikiConst::NS_MAIN, $days);
 			$cache->set($data);
 		} else {
-			$data = $this->getNamespaceEdits($admins, 0, $days);
+			$data = $this->getNamespaceEdits($admins, MediawikiConst::NS_MAIN, $days);
 		}
 		return $data;
 	}
@@ -265,8 +278,8 @@ class AdminActivity {
 			<table class='wikitable sortable' border='1'>
 			<thead>
 				<tr>
-					<th title='user_id'>UID</th>
-					<th title='actor_id'>AID</th>
+					<th class="user-id" title='user_id'>UID</th>
+					<th class="actor-id" title='actor_id'>AID</th>
 					<th>{$name_head}</th>
 					<th>Usuwanie / Przywracanie</th>
 					<th>(Od)blokowanie osób</th>
@@ -284,13 +297,13 @@ class AdminActivity {
 				$name_cell = $admin['admin'];
 			} else {
 				$detUrl = "index.php?" . http_build_query(['action' => 'details', 'username' => $admin['admin']], '', '&amp;');
-				$name_cell = "<a href='{$detUrl}'>{$admin['admin']}</a>";
+				$name_cell = "<a href='{$detUrl}' class='user-link main'>{$admin['admin']}</a>";
 			}
 
 			$html .= <<<EOS
 				<tr>
-					<td>{$admin['uid']}</td>
-					<td>{$actor_id}</td>
+					<td class="user-id">{$admin['uid']}</td>
+					<td class="actor-id">{$actor_id}</td>
 					<td>{$name_cell}</td>
 					<td>{$admin['delete']}</td>
 					<td>{$admin['block']}</td>
