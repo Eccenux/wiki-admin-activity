@@ -36,6 +36,7 @@ class AdminActivity {
 	 * Admin list.
 	 *
 	 * @return Admin list with placeholder values for stats.
+	 * 	Crucially keys are `actor_id` (crucially for other functions).
 	 */
 	public function getAdmins() {
 		$query = "SELECT user_id, actor_id, actor_name 
@@ -74,7 +75,7 @@ class AdminActivity {
 	/**
 	 * Get any actor with admin-like data (good for ex-admins).
 	 * 
-	 * @return Same list as for `getAdmins()`.
+	 * @return Same list as for `getAdmins()`, but with just one record.
 	 */
 	public function getActor($username) {
 		$query = "SELECT user_id, actor_id, actor_name 
@@ -93,11 +94,25 @@ class AdminActivity {
 		return $this->fetchAndPrepareAdmins($result);
 	}
 
-	public function getMediaWikiEdits($admins, $days=365) {
-		return $this->getNamespaceEdits($admins, MediawikiConst::NS_MEDIAWIKI, $days);
+	/**
+	 * Get edit count from the Mediawiki namespace (interface).
+	 *
+	 * @param array $actorIds 
+	 * @param integer $days
+	 * @return array $actor_id => count.
+	 */
+	public function getMediaWikiEdits($actorIds, $days=365) {
+		return $this->getNamespaceEdits($actorIds, MediawikiConst::NS_MEDIAWIKI, $days);
 	}
-	public function getMainEdits($admins, $days=365) {
-		if (count($admins) > 10) {
+	/**
+	 * Get edit count from the Main namespace (articles).
+	 *
+	 * @param array $actorIds 
+	 * @param integer $days
+	 * @return array $actor_id => count.
+	 */
+	public function getMainEdits($actorIds, $days=365) {
+		if (count($actorIds) > 10) {
 			// try cache
 			$cache = $this->cache['main_edits'];
 			$cachedData = $cache->get();
@@ -106,22 +121,30 @@ class AdminActivity {
 			}
 
 			// fresh data (+save in cache)
-			$data = $this->getNamespaceEdits($admins, MediawikiConst::NS_MAIN, $days);
+			$data = $this->getNamespaceEdits($actorIds, MediawikiConst::NS_MAIN, $days);
 			$cache->set($data);
 		} else {
-			$data = $this->getNamespaceEdits($admins, MediawikiConst::NS_MAIN, $days);
+			$data = $this->getNamespaceEdits($actorIds, MediawikiConst::NS_MAIN, $days);
 		}
 		return $data;
 	}
 
-	public function getNamespaceEdits($admins, $ns, $days=365) {
+	/**
+	 * Undocumented function
+	 *
+	 * @param array $actorIds 
+	 * @param integer $ns Namespace number.
+	 * @param integer $days
+	 * @return array $actor_id => count.
+	 */
+	public function getNamespaceEdits($actorIds, $ns, $days=365) {
 		if (!is_int($ns) || $ns < 0) {
 			return [];
 		}
 		if (!is_int($days) || $days < 0) {
 			return [];
 		}
-		$placeholders = implode(',', array_fill(0, count($admins), '?'));
+		$placeholders = implode(',', array_fill(0, count($actorIds), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 	
 		// Note! revision_userindex might be MUCH faster (e.g. 0.28 seconds vs 86.32 seconds for a single actor)
@@ -137,8 +160,8 @@ class AdminActivity {
 		if (!$stmt) {
 			$this->sqlError();
 		}
-		$types = str_repeat('i', count($admins)) . 's'; // 's' for timestamp string
-		$params = array_merge(array_keys($admins), [$timestamp]);
+		$types = str_repeat('i', count($actorIds)) . 's'; // 's' for timestamp string
+		$params = array_merge($actorIds, [$timestamp]);
 		$stmt->bind_param($types, ...$params);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -151,13 +174,19 @@ class AdminActivity {
 		return $data;
 	}
 
-	/** Standard admin actions: delete, block, protect. */
-	public function getAdminActions($admins, $days=365) {
+	/**
+	 * Stats of standard admin actions: delete, block, protect.
+	 *
+	 * @param array $actorIds 
+	 * @param integer $days
+	 * @return array $actor_id=>stats[] (`$actor_id => ['delete' => 0, 'block' => 0, 'protect' => 0, 'other' => 0]`).
+	 */
+	public function getAdminActions($actorIds, $days=365) {
 		if (!is_int($days) || $days < 0) {
 			return [];
 		}
 
-		$placeholders = implode(',', array_fill(0, count($admins), '?'));
+		$placeholders = implode(',', array_fill(0, count($actorIds), '?'));
 		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
 
 		// base actions
@@ -180,8 +209,8 @@ class AdminActivity {
 		if (!$stmt) {
 			$this->sqlError();
 		}
-		$types = str_repeat('i', count($admins)) . 's'; // 's' for timestamp string
-		$params = array_merge(array_keys($admins), [$timestamp]);
+		$types = str_repeat('i', count($actorIds)) . 's'; // 's' for timestamp string
+		$params = array_merge($actorIds, [$timestamp]);
 		$stmt->bind_param($types, ...$params);
 		$stmt->execute();
 		$result = $stmt->get_result();
@@ -236,14 +265,20 @@ class AdminActivity {
 		return $data;
 	}
 
-	public function getAdminStats() {
+	/**
+	 * Full data of all administrators.
+	 *
+	 * @return array Full data for all current administrators (ids, name and all stats).
+	 */
+	public function getAdminStats($days=365) {
 		$admins = $this->getAdmins();
-		return $this->getBasicAdminStats($admins);
+		return $this->getBasicAdminStats($admins, $days);
 	}
-	private function getBasicAdminStats($admins) {
-		$mwEdits = $this->getMediaWikiEdits($admins);
-		$mainEdits = $this->getMainEdits($admins);
-		$adminActions = $this->getAdminActions($admins);
+	private function getBasicAdminStats($admins, $days=365) {
+		$actorIds = array_keys($admins);
+		$mwEdits = $this->getMediaWikiEdits($actorIds, $days);
+		$mainEdits = $this->getMainEdits($actorIds, $days);
+		$adminActions = $this->getAdminActions($actorIds, $days);
 
 		foreach ($admins as $actor_id => &$admin) {
 			$sum = 0;
@@ -266,11 +301,23 @@ class AdminActivity {
 		return $admins;
 	}
 
-	public function getSingleAdminStats($username) {
+	/**
+	 * Get stats of a single user (possibly an admin in the past).
+	 *
+	 * @param string $username
+	 * @return array Full data for the user (ids, name and all stats).
+	 */
+	public function getSingleAdminStats($username, $days=365) {
 		$admins = $this->getActor($username);
-		return $this->getBasicAdminStats($admins);
+		return $this->getBasicAdminStats($admins, $days);
 	}
 
+	/**
+	 * Render admin data to an HTML table.
+	 *
+	 * @param array $data Full admin data (ids, name and all stats).
+	 * @return Rendered html for the admin array.
+	 */
 	public function renderTable($data) {
 		$is_single = count($data) == 1;
 		$name_head = ($is_single) ? "User" : "Admin";
