@@ -43,15 +43,21 @@ require_once './AdminActivity.php';
 
 $oTicks->pf_insTick('adminActivity');
 $adminActivity = new AdminActivity($dbConfig);
+$dataType = 'all';
+// single user
 if ($action == 'details' && !empty($username)) {
+	$dataType = 'details';
+	$months = [1,3,4,6,9,11,12];
 	$contentHtml .= '<bcrumbs>&lt; <a href="?">'.L('Main table').'</a></bcrumbs>';
-	$data = $adminActivity->getSingleAdminStats($username);
+	$contentHtml .= '<p>'.htmlspecialchars($username, ENT_QUOTES, 'UTF-8')."</p>";
+	$data = $adminActivity->getSingleAdminStats($username, $months);
+// all admins
 } else {
 	$days = 365;
 	$contentHtml .= '<p>'.L('Data for the last').": $days ".L('days')."</p>";
 	$data = $adminActivity->getAdminStats($days);
 }
-$contentHtml .= $adminActivity->renderTable($data);
+$contentHtml .= $adminActivity->renderTable($data, $dataType);
 $oTicks->pf_endTick('adminActivity');
 
 //

@@ -1,6 +1,7 @@
 <?php
 require_once './lib/SimpleCache.php';
 require_once './lib/MediawikiConst.php';
+require_once './lib/TablePrinter.php';
 
 class AdminActivity {
 	private $conn;
@@ -59,6 +60,7 @@ class AdminActivity {
 		while ($row = $result->fetch_assoc()) {
 			$admins[$row['actor_id']] = [
 				'uid' => $row['user_id'],
+				'aid' => $row['actor_id'],
 				'admin' => $row['actor_name'],
 				'delete' => 0,
 				'block' => 0,
@@ -170,6 +172,15 @@ class AdminActivity {
 		while ($row = $result->fetch_assoc()) {
 			$data[$row['revactor_actor']] = $row['cnt'];
 		}
+
+		// echo "<pre>"; var_dump([
+		// 	'actorIds'=>$actorIds,
+		// 	'ns'=>$ns,
+		// 	'data'=>$data,
+		// 	'query'=>$query,
+		// 	'types'=>$types,
+		// 	'params'=>$params,
+		// ]); echo "</pre>";
 	
 		return $data;
 	}
@@ -305,11 +316,23 @@ class AdminActivity {
 	 * Get stats of a single user (possibly an admin in the past).
 	 *
 	 * @param string $username
-	 * @return array Full data for the user (ids, name and all stats).
+	 * @return array Full data for the user (ids, name and all stats) for each $months.
 	 */
-	public function getSingleAdminStats($username, $days=365) {
-		$admins = $this->getActor($username);
-		return $this->getBasicAdminStats($admins, $days);
+	public function getSingleAdminStats($username, $months=[1,6,12]) {
+		$adminsRaw = $this->getActor($username);
+		if (count($adminsRaw) < 1) {
+			return [];
+		}
+		$actor_id = array_keys($adminsRaw)[0];
+		foreach ($months as $m) {
+			$days = intval(round(365/12 * $m));
+			$admins = $adminsRaw;
+			$row = $this->getBasicAdminStats($admins, $days);
+			$record = $row[$actor_id];
+			$record['months'] = $m;
+			$data[] = $record;
+		}
+		return $data;
 	}
 
 	/**
@@ -318,49 +341,62 @@ class AdminActivity {
 	 * @param array $data Full admin data (ids, name and all stats).
 	 * @return Rendered html for the admin array.
 	 */
-	public function renderTable($data) {
-		$is_single = count($data) == 1;
+	public function renderTable($data, $dataType) {
+		$is_single = $dataType === 'details';
 		$name_head = ($is_single) ? "User" : "Admin";
+
+		// columns
+		$columns = [];
+		if ($is_single) {
+			$columns = [
+				['_cell' => 'M.', 'title' => 'L. miesięcy wstecz.'],
+			];
+		} else {
+			$columns = [
+				['_cell' => 'UID', 'class' => 'user-id', 'title' => 'user_id'],
+				['_cell' => 'AID', 'class' => 'actor-id', 'title' => 'actor_id'],
+				['_cell' => "Admin"],
+			];
+		}
+		$columns[] = ['_cell' => 'Usuwanie / Przywracanie'];
+		$columns[] = ['_cell' => '(Od)blokowanie osób'];
+		$columns[] = ['_cell' => '(Od)blokowanie stron'];
+		$columns[] = ['_cell' => 'Inne logowane', 'title' => 'Inne akcje administracyjne zapisane w logach'];
+		$columns[] = ['_cell' => 'Edycje MW', 'title' => 'Edycje w przestrzeni nazw MediaWiki'];
+		$columns[] = ['_cell' => 'Suma akcji', 'class' => 'admin-total'];
+		$columns[] = ['_cell' => 'Edycje artykułów', 'title' => 'Edycje w głównej przestrzeni nazw (ns:0)'];
+
+		// mapping
+		$mapping = [];
+		if ($is_single) {
+			$mapping['months'] = [];
+		} else {
+			$mapping['uid'] = ['class' => 'user-id'];
+			$mapping['aid'] = ['class' => 'actor-id'];
+			$mapping['admin'] = ['_render' => function($value, $row) {
+				$url = "index.php?" . http_build_query(['action' => 'details', 'username' => $row['admin']], '', '&amp;');
+				$content = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+				return "<a href='{$url}' class='user-link main'>{$content}</a>";
+			}];
+		}
+		$mapping['delete'] = [];
+		$mapping['block'] = [];
+		$mapping['protect'] = [];
+		$mapping['other'] = [];
+		$mapping['mediawiki_edits'] = [];
+		$mapping['total'] = ['class'=>'admin-total'];
+		$mapping['main_edits'] = [];
+
+		// render
+		$printer = new TablePrinter($mapping);
+		$head = $printer->renderHead($columns);
 		$html = <<<EOS
 			<table class='wikitable sortable' border='1'>
-			<thead>
-				<tr>
-					<th class='user-id' title='user_id'>UID</th>
-					<th class='actor-id' title='actor_id'>AID</th>
-					<th>{$name_head}</th>
-					<th>Usuwanie / Przywracanie</th>
-					<th>(Od)blokowanie osób</th>
-					<th>(Od)blokowanie stron</th>
-					<th title='Inne akcje administracyjne zapisane w logach'>Inne logowane</th>
-					<th title='Edycje w przestrzeni nazw MediaWiki'>Edycje MW</th>
-					<th class='admin-total'>Suma akcji</th>
-					<th title='Edycje w głównej przestrzeni nazw (ns:0)'>Edycje artykułów</th>
-				</tr>
-			</thead>
+			<thead>{$head}</thead>
 			<tbody>
 		EOS;
-		foreach ($data as $actor_id => $admin) {
-			if ($is_single) {
-				$name_cell = $admin['admin'];
-			} else {
-				$detUrl = "index.php?" . http_build_query(['action' => 'details', 'username' => $admin['admin']], '', '&amp;');
-				$name_cell = "<a href='{$detUrl}' class='user-link main'>{$admin['admin']}</a>";
-			}
-
-			$html .= <<<EOS
-				<tr>
-					<td class='user-id'>{$admin['uid']}</td>
-					<td class='actor-id'>{$actor_id}</td>
-					<td>{$name_cell}</td>
-					<td>{$admin['delete']}</td>
-					<td>{$admin['block']}</td>
-					<td>{$admin['protect']}</td>
-					<td>{$admin['other']}</td>
-					<td>{$admin['mediawiki_edits']}</td>
-					<td class='admin-total'>{$admin['total']}</td>
-					<td>{$admin['main_edits']}</td>
-				</tr>
-			EOS;
+		foreach ($data as $admin) {
+			$html .= $printer->renderRow($admin);
 		}
 		$html .= "</tbody></table>";
 		return $html;
