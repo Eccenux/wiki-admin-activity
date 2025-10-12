@@ -325,15 +325,15 @@ class AdminActivity {
 			<table class='wikitable sortable' border='1'>
 			<thead>
 				<tr>
-					<th class="user-id" title='user_id'>UID</th>
-					<th class="actor-id" title='actor_id'>AID</th>
+					<th class='user-id' title='user_id'>UID</th>
+					<th class='actor-id' title='actor_id'>AID</th>
 					<th>{$name_head}</th>
 					<th>Usuwanie / Przywracanie</th>
 					<th>(Od)blokowanie osób</th>
 					<th>(Od)blokowanie stron</th>
 					<th title='Inne akcje administracyjne zapisane w logach'>Inne logowane</th>
 					<th title='Edycje w przestrzeni nazw MediaWiki'>Edycje MW</th>
-					<th>Suma akcji</th>
+					<th class='admin-total'>Suma akcji</th>
 					<th title='Edycje w głównej przestrzeni nazw (ns:0)'>Edycje artykułów</th>
 				</tr>
 			</thead>
@@ -349,15 +349,15 @@ class AdminActivity {
 
 			$html .= <<<EOS
 				<tr>
-					<td class="user-id">{$admin['uid']}</td>
-					<td class="actor-id">{$actor_id}</td>
+					<td class='user-id'>{$admin['uid']}</td>
+					<td class='actor-id'>{$actor_id}</td>
 					<td>{$name_cell}</td>
 					<td>{$admin['delete']}</td>
 					<td>{$admin['block']}</td>
 					<td>{$admin['protect']}</td>
 					<td>{$admin['other']}</td>
 					<td>{$admin['mediawiki_edits']}</td>
-					<td>{$admin['total']}</td>
+					<td class='admin-total'>{$admin['total']}</td>
 					<td>{$admin['main_edits']}</td>
 				</tr>
 			EOS;

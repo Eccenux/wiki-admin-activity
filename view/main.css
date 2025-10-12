@@ -118,3 +118,43 @@ bcrumbs
 	margin: 0 0 1em -.5em;
 	font-size: 90%;
 }
+
+/**
+	Postition on the list (in the table).
+*/
+table {
+	counter-reset: linkCount; /* reset for each table */
+	
+	td:nth-child(3) a::before {
+		counter-increment: linkCount;
+		content: counter(linkCount) ". "; /* no before link */
+		color: #333;
+	}
+}
+
+/**
+	Columns.
+*/
+.user-id {
+	td& {
+		background: #90ee903d;
+		color: #555;
+	}
+}
+.actor-id {
+	td& {
+		background: #ffffe0d6;
+		color: #555;
+	}
+}
+.admin-total {
+	:is(td,th)& {
+		border-left-width: 2px;
+		border-right-width: 2px;
+	}
+	td& {
+		background: #90ee903d;
+		font-weight: bold;
+	}
+
+}
