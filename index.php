@@ -47,7 +47,9 @@ if ($action == 'details' && !empty($username)) {
 	$contentHtml .= '<bcrumbs>&lt; <a href="?">'.L('Main table').'</a></bcrumbs>';
 	$data = $adminActivity->getSingleAdminStats($username);
 } else {
-	$data = $adminActivity->getAdminStats();
+	$days = 365;
+	$contentHtml .= '<p>'.L('Data for the last').": $days ".L('days')."</p>";
+	$data = $adminActivity->getAdminStats($days);
 }
 $contentHtml .= $adminActivity->renderTable($data);
 $oTicks->pf_endTick('adminActivity');

@@ -4,4 +4,6 @@ $arrLang = array(
 	//
 	'AdminActivity:title' => 'Statystyki aktywności • AdminActivity',
 	'Main table' => 'Główna tabela',
+	'Data for the last' => 'Dane za ostatnie',
+	'days' => 'dni',
 );
