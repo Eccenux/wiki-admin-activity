@@ -349,7 +349,7 @@ class AdminActivity {
 		$columns = [];
 		if ($is_single) {
 			$columns = [
-				['_cell' => 'M.', 'title' => 'L. miesięcy wstecz.'],
+				['_cell' => 'L. mies.', 'title' => 'L. miesięcy wstecz.'],
 			];
 		} else {
 			$columns = [
