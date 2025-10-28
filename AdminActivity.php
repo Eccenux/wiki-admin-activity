@@ -16,7 +16,7 @@ class AdminActivity {
 
 		$this->conn = new mysqli($host, $user, $password, $database);
 		if ($this->conn->connect_error) {
-			die("Connection failed: " . $this->conn->connect_error);
+			die("ERROR: Connection failed: " . $this->conn->connect_error);
 		}
 
 		$day_minutes = 1440; // Cache for 1 day
@@ -30,7 +30,7 @@ class AdminActivity {
 	}
 
 	private function sqlError() {
-		die("<p>Prepare failed: " . $this->conn->error); // Output MySQL error
+		die("<p>ERROR: Prepare failed: " . $this->conn->error); // Output MySQL error
 	}
 
 	/**

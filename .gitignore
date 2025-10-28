@@ -1,3 +1,4 @@
 *.priv.*
 *.priv
 /.cache
+*.lnk

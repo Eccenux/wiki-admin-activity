@@ -16,7 +16,8 @@ $username = isset($_GET['username']) ? $_GET['username'] : '';
 // DB config
 //
 /**/
-$arrMyCnf = parse_ini_file("../../.my.script.cnf", true);
+$arrMyCnf = parse_ini_file("../../.my.script.cnf", true)
+	or die("ERROR: unable to read cnf");
 $arrSrcDb = $arrMyCnf['plwikidb'];
 
 $dbConfig = [];
@@ -24,7 +25,7 @@ $dbConfig = [];
 // https://wikitech.wikimedia.org/wiki/Help:Wiki_Replicas#Connecting_to_the_database_replicas
 // https://db-names.toolforge.org/
 $project = "plwiki";
-$dbConfig['host'] = $project.".web.db.svc.wikimedia.cloud";
+$dbConfig['host'] = !empty($arrSrcDb['tunnel_host']) ? $arrSrcDb['tunnel_host'] : $project.".web.db.svc.wikimedia.cloud";
 $dbConfig['database'] = $project."_p";
 $dbConfig['user'] = $arrSrcDb['user'];
 $dbConfig['password'] = $arrSrcDb['password'];
@@ -47,7 +48,7 @@ $dataType = 'all';
 // single user
 if ($action == 'details' && !empty($username)) {
 	$dataType = 'details';
-	$months = [1,3,4,6,9,11,12];
+	$months = [1,3,4,6,9,11,12,18,24];
 	$contentHtml .= '<bcrumbs>&lt; <a href="?">'.L('Main table').'</a></bcrumbs>';
 	$contentHtml .= '<p>'.htmlspecialchars($username, ENT_QUOTES, 'UTF-8').", aktywność w ostatnich miesiąch</p>";
 	$data = $adminActivity->getSingleAdminStats($username, $months);
