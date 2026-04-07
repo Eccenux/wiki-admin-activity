@@ -50,7 +50,7 @@ if ($action == 'details' && !empty($username)) {
 	$dataType = 'details';
 	$months = [1,3,4,6,9,11,12,18,24];
 	$contentHtml .= '<bcrumbs>&lt; <a href="?">'.L('Main table').'</a></bcrumbs>';
-	$contentHtml .= '<p>'.htmlspecialchars($username, ENT_QUOTES, 'UTF-8').", aktywność w ostatnich miesiąch</p>";
+	$contentHtml .= '<p><a href="https://pl.wikipedia.org/wiki/User:'.rawurlencode($username).'" rel="noopener noreferrer" target="_blank">'.htmlspecialchars($username, ENT_QUOTES, 'UTF-8').'</a>, aktywność w ostatnich miesiącach</p>';
 	$data = $adminActivity->getSingleAdminStats($username, $months);
 // all admins
 } else {

@@ -6,7 +6,7 @@
 </ul>
 </div>
 <div id="footer">
-	<p>Copyright &copy;2025 Maciej Jaros (pl:User:Nux, en:User:Nux)</p>
+	<p>Copyright &copy;2025–2026 Maciej Jaros (pl:User:Nux, en:User:Nux)</p>
 	<?php if (!empty($arrTicks)) { ?>
 		<div id="ticks">
 			<?=L('Execution times')?> [s]:
