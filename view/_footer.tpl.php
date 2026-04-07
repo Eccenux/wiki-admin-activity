@@ -1,4 +1,9 @@
 
+<p>(*) Inne akcje administracyjne zapisane w logach to:</p>
+<ul>
+<li>Zarządzanie: filtrami nadużyć (abusefilter), modelami zawartości (contentmodel), tagami edycji (managetags, update-tag), uprawnieniami (rights).</li>
+<li>Dodatkowo również: globalne blokady (gblblock), patrol, setmentor, merge, massmessage-send, przenoszenie bez przekierowania (move-noredir).</li>
+</ul>
 </div>
 <div id="footer">
 	<p>Copyright &copy;2025 Maciej Jaros (pl:User:Nux, en:User:Nux)</p>

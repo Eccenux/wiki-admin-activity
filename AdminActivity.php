@@ -237,7 +237,7 @@ class AdminActivity {
 			$data[$actor_id][$row['log_type']] = $count;
 		}
 
-		// other
+		// other (Inne akcje administracyjne zapisane w logach)
 		$query = <<<EOS
 				SELECT log_actor
 					, count(*) as cnt
@@ -361,7 +361,7 @@ class AdminActivity {
 		$columns[] = ['_cell' => 'Usuwanie / Przywracanie'];
 		$columns[] = ['_cell' => '(Od)blokowanie osób'];
 		$columns[] = ['_cell' => '(Od)blokowanie stron'];
-		$columns[] = ['_cell' => 'Inne logowane', 'title' => 'Inne akcje administracyjne zapisane w logach'];
+		$columns[] = ['_cell' => 'Inne logowane (*)', 'title' => 'Inne akcje administracyjne zapisane w logach'];
 		$columns[] = ['_cell' => 'Edycje MW', 'title' => 'Edycje w przestrzeni nazw MediaWiki'];
 		$columns[] = ['_cell' => 'Suma akcji', 'class' => 'admin-total'];
 		$columns[] = ['_cell' => 'Edycje artykułów', 'title' => 'Edycje w głównej przestrzeni nazw (ns:0)'];
