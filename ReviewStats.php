@@ -1,6 +1,4 @@
 <?php
-require_once './lib/SimpleCache.php';
-require_once './lib/MediawikiConst.php';
 require_once './lib/TablePrinter.php';
 
 /**
@@ -130,56 +128,26 @@ class ReviewStats {
 	}
 
 	/**
-	 * Render admin data to an HTML table.
+	 * Render stats data to an HTML table.
 	 *
-	 * @param array $data Full admin data (ids, name and all stats).
-	 * @return Rendered html for the admin array.
+	 * @param array $data Data from `getStats`.
+	 * @return Rendered html.
 	 */
-	public function renderTable($data, $dataType) {
-		$is_single = $dataType === 'details';
-		$name_head = ($is_single) ? "User" : "Admin";
-
-		// columns
-		$columns = [];
-		if ($is_single) {
-			$columns = [
-				['_cell' => 'L. mies.', 'title' => 'L. miesięcy wstecz.'],
-			];
-		} else {
-			$columns = [
-				['_cell' => 'UID', 'class' => 'user-id', 'title' => 'user_id'],
-				['_cell' => 'AID', 'class' => 'actor-id', 'title' => 'actor_id'],
-				['_cell' => "Admin"],
-			];
-		}
-		$columns[] = ['_cell' => 'Usuwanie / Przywracanie'];
-		$columns[] = ['_cell' => '(Od)blokowanie osób'];
-		$columns[] = ['_cell' => '(Od)blokowanie stron'];
-		$columns[] = ['_cell' => 'Inne logowane (*)', 'title' => 'Inne akcje administracyjne zapisane w logach'];
-		$columns[] = ['_cell' => 'Edycje MW', 'title' => 'Edycje w przestrzeni nazw MediaWiki'];
-		$columns[] = ['_cell' => 'Suma akcji', 'class' => 'admin-total'];
-		$columns[] = ['_cell' => 'Edycje artykułów', 'title' => 'Edycje w głównej przestrzeni nazw (ns:0)'];
-
-		// mapping
-		$mapping = [];
-		if ($is_single) {
-			$mapping['months'] = [];
-		} else {
-			$mapping['uid'] = ['class' => 'user-id'];
-			$mapping['aid'] = ['class' => 'actor-id'];
-			$mapping['admin'] = ['_render' => function($value, $row) {
-				$url = "index.php?" . http_build_query(['action' => 'details', 'username' => $row['admin']], '', '&amp;');
-				$content = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-				return "<a href='{$url}' class='user-link main'>{$content}</a>";
-			}];
-		}
-		$mapping['delete'] = [];
-		$mapping['block'] = [];
-		$mapping['protect'] = [];
-		$mapping['other'] = [];
-		$mapping['mediawiki_edits'] = [];
-		$mapping['total'] = ['class'=>'admin-total'];
-		$mapping['main_edits'] = [];
+	public function renderStatsTable($data) {
+		$columns = [
+			['_cell' => 'NS', 'title' => 'Przestrzeń nazw (namespace)'],
+			['_cell' => 'Dzień'],
+			['_cell' => 'Razem', 'title' => 'Wszystkie przejrzane', 'class' => 'count-total'],
+			['_cell' => 'Zmienione', 'title' => "Przejrzenie zmian na stronach", 'class' => 'count-changed'],
+			['_cell' => 'Nowe', 'title' => "Przejrzenie nowych stron", 'class' => 'count-initial'],
+		];
+		$mapping = [
+			'ns' => [],
+			'day' => [],
+			'review_count_total' => ['class' => 'count-total'],
+			'review_count_changes' => ['class' => 'count-changed'],
+			'review_count_initial' => ['class' => 'count-initial'],
+		];
 
 		// render
 		$printer = new TablePrinter($mapping);
