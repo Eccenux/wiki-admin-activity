@@ -3,6 +3,9 @@ require_once './lib/SimpleCache.php';
 require_once './lib/MediawikiConst.php';
 require_once './lib/TablePrinter.php';
 
+/**
+ * Review stats (przeglądanie zmian).
+ */
 class ReviewStats {
 	private $conn;
 	/** User or project timezone. */
@@ -20,15 +23,6 @@ class ReviewStats {
 		if ($this->conn->connect_error) {
 			die("ERROR: Connection failed: " . $this->conn->connect_error);
 		}
-
-		$day_minutes = 1440; // Cache for 1 day
-		$baseDir = "./.cache/";
-		if (!is_dir($baseDir)) {
-			mkdir($baseDir, 0777, true);
-		}
-		$this->cache = [
-			'main_edits' => new SimpleCache($baseDir . 'main_edits_cache.json', $day_minutes),
-		];
 	}
 
 	private function sqlError() {
@@ -98,19 +92,23 @@ class ReviewStats {
 		// time boundary in UTC time
 		$minTimestamp = $this->toWikiTimestamp("today -$days days");
 
-		// CAST(SUBSTRING(CAST(log_timestamp AS CHAR(14)), 1, 10) AS UNSIGNED) AS dayInt
-		$query = "SELECT COUNT(*) AS review_count_total, log_namespace AS ns,
-				DATE_FORMAT(
+		$query = "SELECT
+				log_namespace AS ns
+				, DATE_FORMAT(
 					DATE_ADD(STR_TO_DATE(log_timestamp, '%Y%m%d%H%i%s'), INTERVAL $offsetHours HOUR),
-					'%Y%m%d'
-				) AS dayInt
+					'%Y-%m-%d'
+				) AS day
+				, COUNT(*) AS review_count_total
+				, SUM(log_action = 'approve') AS review_count_changes
+				, SUM(log_action = 'approve-i') AS review_count_initial
 			FROM logging
 			WHERE log_type = 'review'
 				AND (log_action = 'approve' OR log_action = 'approve-i')
 				AND log_timestamp >= $minTimestamp
 				AND log_actor = ?
-			GROUP BY log_namespace, dayInt
+			GROUP BY log_namespace, day
 			HAVING review_count_total > 0
+			ORDER BY log_namespace, day
 		";
 
 		$stmt = $this->conn->prepare($query);
