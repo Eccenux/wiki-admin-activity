@@ -41,6 +41,7 @@ $contentHtml = '';
 // Process
 //
 require_once './AdminActivity.php';
+require_once './ReviewStats.php';
 
 $oTicks->pf_insTick('adminActivity');
 $adminActivity = new AdminActivity($dbConfig);
@@ -60,6 +61,19 @@ if ($action == 'details' && !empty($username)) {
 }
 $contentHtml .= $adminActivity->renderTable($data, $dataType);
 $oTicks->pf_endTick('adminActivity');
+
+if ($action == 'details' && !empty($username)) {
+	$oTicks->pf_insTick('ReviewStats');
+
+	$reviewStats = new ReviewStats($dbConfig);
+	$reviewData = $reviewStats->getStats($username);
+	$reviewHtml = $reviewStats->renderStatsTable($reviewData);
+
+	$contentHtml .= "<h2>Wersje przejrzane</h2>";
+	$contentHtml .= $reviewHtml;
+	
+	$oTicks->pf_endTick('ReviewStats');
+}
 
 //
 // Form ticks
