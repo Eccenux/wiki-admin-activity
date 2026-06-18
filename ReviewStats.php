@@ -90,7 +90,7 @@ class ReviewStats {
 				, COUNT(*) AS review_count_total
 				, SUM(log_action = 'approve') AS review_count_changes
 				, SUM(log_action = 'approve-i') AS review_count_initial
-			FROM logging
+			FROM logging_userindex
 			WHERE log_type = 'review'
 				AND (log_action = 'approve' OR log_action = 'approve-i')
 				AND log_timestamp >= $minTimestamp
