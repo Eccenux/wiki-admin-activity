@@ -2,22 +2,13 @@
 require_once './lib/SimpleCache.php';
 require_once './lib/MediawikiConst.php';
 require_once './lib/TablePrinter.php';
+require_once './lib/DbConnection.php';
 
 class AdminActivity {
 	private $conn;
 
 	public function __construct($dbConfig) {
-		// $host = "plwiki.analytics.db.svc.wikimedia.cloud";
-		// $database = "plwiki_p";
-		$host = $dbConfig['host'];
-		$database = $dbConfig['database'];
-		$user = $dbConfig['user'];
-		$password = $dbConfig['password'];
-
-		$this->conn = new mysqli($host, $user, $password, $database);
-		if ($this->conn->connect_error) {
-			die("ERROR: Connection failed: " . $this->conn->connect_error);
-		}
+		$this->conn = DbConnection::getConnection($dbConfig);
 
 		$day_minutes = 1440; // Cache for 1 day
 		$baseDir = "./.cache/";
