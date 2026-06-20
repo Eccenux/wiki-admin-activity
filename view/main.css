@@ -110,6 +110,12 @@ table th
 	vertical-align: bottom;
 	background-color:#f0f8f0;
 }
+tbody tr:nth-child(even) {
+	background-color: #f6f8fa;
+}
+tbody tr:hover {
+	background-color: #cacef2;
+}
 
 /* other */
 bcrumbs

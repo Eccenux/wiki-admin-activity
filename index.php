@@ -69,8 +69,10 @@ if ($action == 'details' && !empty($username)) {
 	$reviewData = $reviewStats->getStats($username);
 	$reviewHtml = $reviewStats->renderStatsTable($reviewData);
 
-	$contentHtml .= "<h2>Wersje przejrzane</h2>";
-	$contentHtml .= $reviewHtml;
+	if (!empty($reviewData)) {
+		$contentHtml .= "<h2>Wersje przejrzane</h2>";
+		$contentHtml .= $reviewHtml;
+	}
 	
 	$oTicks->pf_endTick('ReviewStats');
 }
