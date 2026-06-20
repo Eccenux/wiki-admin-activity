@@ -45,6 +45,7 @@ require_once './ReviewStats.php';
 
 $oTicks->pf_insTick('adminActivity');
 $adminActivity = new AdminActivity($dbConfig);
+$adminActivity->oTicks = $oTicks;
 $dataType = 'all';
 // single user
 if ($action == 'details' && !empty($username)) {

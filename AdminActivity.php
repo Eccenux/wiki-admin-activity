@@ -7,6 +7,9 @@ require_once './lib/DbConnection.php';
 class AdminActivity {
 	private $conn;
 
+	/** Ticks instance. */
+	public $oTicks = false;
+
 	public function __construct($dbConfig) {
 		$this->conn = DbConnection::getConnection($dbConfig);
 
@@ -24,6 +27,17 @@ class AdminActivity {
 		die("<p>ERROR: Prepare failed: " . $this->conn->error); // Output MySQL error
 	}
 
+	private function tickIns($name) {
+		if ($this->oTicks) {
+			$this->oTicks->pf_insTick('AA:'.$name);
+		}
+	}
+	private function tickEnd($name) {
+		if ($this->oTicks) {
+			$this->oTicks->pf_endTick('AA:'.$name);
+		}
+	}
+
 	/**
 	 * Admin list.
 	 *
@@ -31,6 +45,7 @@ class AdminActivity {
 	 * 	Crucially keys are `actor_id` (crucially for other functions).
 	 */
 	public function getAdmins() {
+		$this->tickIns('getAdmins');
 		$query = "SELECT user_id, actor_id, actor_name 
 				FROM user 
 				INNER JOIN actor ON user_id = actor_user
@@ -44,9 +59,11 @@ class AdminActivity {
 			$this->sqlError();
 		}
 
+		$this->tickEnd('getAdmins');
 		return $this->fetchAndPrepareAdmins($result);
 	}
 	private function fetchAndPrepareAdmins($result) {
+		$this->tickIns('fetchAndPrepareAdmins');
 		$admins = [];
 		while ($row = $result->fetch_assoc()) {
 			$admins[$row['actor_id']] = [
@@ -63,6 +80,7 @@ class AdminActivity {
 				'total' => 0
 			];
 		}
+		$this->tickEnd('fetchAndPrepareAdmins');
 		return $admins;
 	}
 
@@ -319,10 +337,18 @@ class AdminActivity {
 	}
 	private function getBasicAdminStats($admins, $days=365) {
 		$actorIds = array_keys($admins);
+		$this->tickIns('getMediaWikiEdits');
 		$mwEdits = $this->getMediaWikiEdits($actorIds, $days);
+		$this->tickEnd('getMediaWikiEdits');
+		$this->tickIns('getMainEdits');
 		$mainEdits = $this->getMainEdits($actorIds, $days);
+		$this->tickEnd('getMainEdits');
+		$this->tickIns('getAllEdits');
 		$allEdits = $this->getAllEdits($actorIds, $days);
+		$this->tickEnd('getAllEdits');
+		$this->tickIns('getAdminActions');
 		$adminActions = $this->getAdminActions($actorIds, $days);
+		$this->tickEnd('getAdminActions');
 
 		foreach ($admins as $actor_id => &$admin) {
 			$sum = 0;
