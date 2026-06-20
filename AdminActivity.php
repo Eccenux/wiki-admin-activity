@@ -59,6 +59,7 @@ class AdminActivity {
 				'other' => 0,
 				'mediawiki_edits' => 0,
 				'main_edits' => 0,
+				'all_edits' => 0,
 				'total' => 0
 			];
 		}
@@ -123,7 +124,7 @@ class AdminActivity {
 	}
 
 	/**
-	 * Undocumented function
+	 * Edits per actor per NS.
 	 *
 	 * @param array $actorIds 
 	 * @param integer $ns Namespace number.
@@ -173,6 +174,46 @@ class AdminActivity {
 		// 	'params'=>$params,
 		// ]); echo "</pre>";
 	
+		return $data;
+	}
+
+	/**
+	 * Edits per actor.
+	 *
+	 * @param array $actorIds 
+	 * @param integer $days
+	 * @return array $actor_id => count.
+	 */
+	public function getAllEdits($actorIds, $days=365) {
+		if (!is_int($days) || $days < 0) {
+			return [];
+		}
+		$placeholders = implode(',', array_fill(0, count($actorIds), '?'));
+		$timestamp = date('YmdHis', strtotime("-$days days")); // Generate timestamp in PHP
+	
+		// Note! revision_userindex might be MUCH faster (e.g. 0.28 seconds vs 86.32 seconds for a single actor)
+		$query = "SELECT rev_actor as revactor_actor, count(*) as cnt
+				FROM revision_userindex
+				LEFT JOIN page ON rev_page = page_id
+				WHERE rev_actor IN ($placeholders)
+					AND rev_timestamp >= ?
+				GROUP BY rev_actor
+		";
+		$stmt = $this->conn->prepare($query);
+		if (!$stmt) {
+			$this->sqlError();
+		}
+		$types = str_repeat('i', count($actorIds)) . 's'; // 's' for timestamp string
+		$params = array_merge($actorIds, [$timestamp]);
+		$stmt->bind_param($types, ...$params);
+		$stmt->execute();
+		$result = $stmt->get_result();
+	
+		$data = [];
+		while ($row = $result->fetch_assoc()) {
+			$data[$row['revactor_actor']] = $row['cnt'];
+		}
+
 		return $data;
 	}
 
@@ -280,6 +321,7 @@ class AdminActivity {
 		$actorIds = array_keys($admins);
 		$mwEdits = $this->getMediaWikiEdits($actorIds, $days);
 		$mainEdits = $this->getMainEdits($actorIds, $days);
+		$allEdits = $this->getAllEdits($actorIds, $days);
 		$adminActions = $this->getAdminActions($actorIds, $days);
 
 		foreach ($admins as $actor_id => &$admin) {
@@ -290,6 +332,9 @@ class AdminActivity {
 			}
 			if (isset($mainEdits[$actor_id])) {
 				$admin['main_edits'] = $mainEdits[$actor_id];
+			}
+			if (isset($allEdits[$actor_id])) {
+				$admin['all_edits'] = $allEdits[$actor_id];
 			}
 			if (isset($adminActions[$actor_id])) {
 				foreach($adminActions[$actor_id] as $key => $value) {
@@ -340,7 +385,7 @@ class AdminActivity {
 		$columns = [];
 		if ($is_single) {
 			$columns = [
-				['_cell' => 'L. mies.', 'title' => 'L. miesięcy wstecz.'],
+				['_cell' => 'L. mies.', 'title' => 'L. miesięcy wstecz'],
 			];
 		} else {
 			$columns = [
@@ -356,6 +401,12 @@ class AdminActivity {
 		$columns[] = ['_cell' => 'Edycje MW', 'title' => 'Edycje w przestrzeni nazw MediaWiki'];
 		$columns[] = ['_cell' => 'Suma akcji', 'class' => 'admin-total'];
 		$columns[] = ['_cell' => 'Edycje artykułów', 'title' => 'Edycje w głównej przestrzeni nazw (ns:0)'];
+		$columns[] = ['_cell' => 'Wszystkie edycje', 'title' => 'Edycji z wszystkich przestrzeni'];
+		$columns[] = ['_cell' => 'Punkty aktywności', 'title' => 'Edycje art * 0,1 + Pozostałe ed. * 0,5  + Suma akcji'];
+		if ($is_single) {
+			$columns[] = ['_cell' => 'Akc./m', 'title' => 'Suma akcji na miesiąc'];
+			$columns[] = ['_cell' => 'Pkt./m', 'title' => 'Punkty aktywności na miesiąc'];
+		}
 
 		// mapping
 		$mapping = [];
@@ -377,6 +428,12 @@ class AdminActivity {
 		$mapping['mediawiki_edits'] = [];
 		$mapping['total'] = ['class'=>'admin-total'];
 		$mapping['main_edits'] = [];
+		$mapping['all_edits'] = [];
+		$mapping['activity_points'] = [];
+		if ($is_single) {
+			$mapping['total_per_m'] = [];
+			$mapping['points_per_m'] = [];
+		}
 
 		// render
 		$printer = new TablePrinter($mapping);
@@ -387,6 +444,11 @@ class AdminActivity {
 			<tbody>
 		EOS;
 		foreach ($data as $admin) {
+			$admin['activity_points'] = $admin['total'] + $admin['main_edits'] * .1 + ($admin['all_edits']-$admin['main_edits']) * .5;
+			if ($is_single) {
+				$admin['total_per_m'] = round($admin['total'] / $admin['months'], 2);
+				$admin['points_per_m'] = round($admin['activity_points'] / $admin['months'], 2);
+			}
 			$html .= $printer->renderRow($admin);
 		}
 		$html .= "</tbody></table>";
