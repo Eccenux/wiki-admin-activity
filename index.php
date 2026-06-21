@@ -57,7 +57,10 @@ if ($action == 'details' && !empty($username)) {
 // all admins
 } else {
 	$days = 365;
-	$contentHtml .= '<p>'.L('Data for the last').": $days ".L('days')."</p>";
+	$contentHtml .= '<p>'.L('Data for the last').": $days ".L('days')
+		.' ('.L('data may be cached for up to').": 24 ".L('hours').")"
+		."</p>"
+	;
 	$data = $adminActivity->getAdminStats($days);
 }
 $contentHtml .= $adminActivity->renderTable($data, $dataType);
