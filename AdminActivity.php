@@ -20,6 +20,7 @@ class AdminActivity {
 		}
 		$this->cache = [
 			'main_edits' => new SimpleCache($baseDir . 'main_edits_cache.json', $day_minutes),
+			'admin_actions' => new SimpleCache($baseDir . 'admin_actions_cache.json', $day_minutes / 6),
 		];
 	}
 
@@ -237,12 +238,38 @@ class AdminActivity {
 
 	/**
 	 * Stats of standard admin actions: delete, block, protect.
+	 * (cached)
 	 *
 	 * @param array $actorIds 
 	 * @param integer $days
 	 * @return array $actor_id=>stats[] (`$actor_id => ['delete' => 0, 'block' => 0, 'protect' => 0, 'other' => 0]`).
 	 */
 	public function getAdminActions($actorIds, $days=365) {
+		if (count($actorIds) > 10) {
+			// try cache
+			$cache = $this->cache['admin_actions'];
+			$cachedData = $cache->get();
+			if ($cachedData !== null) {
+				return $cachedData;
+			}
+
+			// fresh data (+save in cache)
+			$data = $this->getAdminActionsUncached($actorIds, $days);
+			$cache->set($data);
+		} else {
+			$data = $this->getAdminActionsUncached($actorIds, $days);
+		}
+		return $data;
+	}
+
+	/**
+	 * Stats of standard admin actions: delete, block, protect.
+	 *
+	 * @param array $actorIds 
+	 * @param integer $days
+	 * @return array $actor_id=>stats[] (`$actor_id => ['delete' => 0, 'block' => 0, 'protect' => 0, 'other' => 0]`).
+	 */
+	private function getAdminActionsUncached($actorIds, $days=365) {
 		if (!is_int($days) || $days < 0) {
 			return [];
 		}
